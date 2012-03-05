@@ -17,6 +17,13 @@ end
 -- Custom functions for use later in the game
 -------------------------------------------------------------------------------
 
+-- A function to update the score
+
+local function updateScore()
+
+    player1PelletNumDisplay.text = player1Bullets;
+    player2PelletNumDisplay.text = player2Bullets;
+end
 -- Define a function to place objects on screen (note: need to figure out how to track these objects for game over removal)
 	
 local function placeObject(whichType)
@@ -27,7 +34,10 @@ local function placeObject(whichType)
     
         -- Type 1 is a triangle
     
+   
             if(whichType == 1) then
+            
+
                 -- Draw a triangle
                 local triangle = display.newLine(100,100, 300,100);
                 triangle:append(200,0, 100,100);
@@ -37,6 +47,7 @@ local function placeObject(whichType)
                 -- Add a custom physics body shape based on the triangle shape
                 triShape = {0,0, 100,-100, 200,0}
                 physics.addBody( triangle, { density=3.0, friction=0.8, bounce=0.3, shape = triShape } )
+                triangle.id = "triangle"
                 triangle.x = 968;
                 triangle.y = 550;
                 triangle.isSleepingAllowed = false
@@ -82,6 +93,7 @@ local function placeObject(whichType)
                 centerOrb.isBullet = true;
                 centerOrb.linearDamping = 1
                 centerOrb.angularDamping = 1;
+                centerOrb.id = "centerOrb";
         
                 local leftOrb = display.newCircle(-275,550, 25,25);
                 physics.addBody( leftOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
@@ -89,6 +101,7 @@ local function placeObject(whichType)
                 leftOrb.isBullet = true;
                 leftOrb.linearDamping = 1
                 leftOrb.angularDamping = 1;
+                centerOrb.leftOrb = leftOrb;
         
                 local leftSmOrb = display.newCircle(-310,550, 10,10);
                 physics.addBody( leftSmOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 10 } )
@@ -96,6 +109,7 @@ local function placeObject(whichType)
                 leftSmOrb.isBullet = true;
                 leftSmOrb.linearDamping = 1
                 leftSmOrb.angularDamping = 1;
+                centerOrb.leftSmOrb = leftSmOrb;
         
                 local rightOrb = display.newCircle(-125,550, 25,25);
                 physics.addBody( rightOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
@@ -103,6 +117,7 @@ local function placeObject(whichType)
                 rightOrb.isBullet = true;
                 rightOrb.linearDamping = 1
                 rightOrb.angularDamping = 1;
+                centerOrb.rightOrb = rightOrb;
         
                 local rightSmOrb = display.newCircle(-90,550, 10,10);
                 physics.addBody( rightSmOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
@@ -110,12 +125,12 @@ local function placeObject(whichType)
                 rightSmOrb.isBullet = true;
                 rightSmOrb.linearDamping = 1
                 rightSmOrb.angularDamping = 1;
-
+                centerOrb.rightSmOrb = rightSmOrb;
                 -- Create joints between the orbs
                 
-                myJointR = physics.newJoint( "pivot", centerOrb, rightOrb, -150,550 )
-                myJointR.isLimitEnabled = true -- (boolean)
-                myJointR:setRotationLimits( -45, 45 )
+                centerOrb.myJointR = physics.newJoint( "pivot", centerOrb, rightOrb, -150,550 )
+                centerOrb.myJointR.isLimitEnabled = true -- (boolean)
+                centerOrb.myJointR:setRotationLimits( -45, 45 )
  
                 myJointRsm = physics.newJoint( "pivot", rightOrb, rightSmOrb, -100,550 )
                 myJointRsm.isLimitEnabled = true -- (boolean)
@@ -219,7 +234,7 @@ local function shootFrom(whichPlayer, loc)
             --group:insert(ball);
             ball.id = "player2Bullet";
             player2Bullets = player2Bullets - 1
-        
+        print ("player 2 fired");
             player2PelletNumDisplay.text = player2Bullets;
         end
     end
@@ -244,7 +259,7 @@ local function shootFrom(whichPlayer, loc)
     end  
     
     local function runBall()
-        
+      --  print("runBall a runnin");
         --Every frame, keep track of how long the ball has been on screen.
         ballTimer = ballTimer + 1
     
@@ -295,43 +310,42 @@ function scene:enterScene( event )
     local whichObj = 1;
 
 
----------------------------
--- Set initial variables for the game
----------------------------
+    ---------------------------
+    -- Set initial variables for the game
+    ---------------------------
 
     bigObjectsOnScreen = 0;
     player1Bullets = 20;
     player2Bullets = 20;
 
--- Function that runs every frame and maintains the game
+    -- Function that runs every frame and maintains the game
 
---should this be a local function here? probably not
-local function run()
-    runTimer = runTimer + 1
-    --print (runTimer);
+    --should this be a local function here? probably not
+    local function run()
+        runTimer = runTimer + 1
+        updateScore();
+        --print (runTimer);
 
-    if (runTimer == 200) then
-        local newObj = placeObject(whichObj);
-        runTimer = 0;
+        if (runTimer == 200) then
+            local newObj = placeObject(whichObj);
+            runTimer = 0;
     
-        if (whichObj == 1) then
-            whichObj = 2 
-        else if (whichObj == 2) then
-            whichObj = 1
+            if (whichObj == 1) then
+                whichObj = 2 
+              
+                else if (whichObj == 2) then
+                    whichObj = 1
+                end 
+            end
         end
     end
-end
 
--- Draw the intial pellet #s
-
-
-
-end
-  
+    -- Start the run timer  
     runTimer = 1
-    --create an enterFrame li stener for all periodic events
+    
+    --create an enterFrame listener for all periodic events
 
-Runtime:addEventListener( "enterFrame", run );
+    Runtime:addEventListener( "enterFrame", run );
     
     
     -- Create two goal zones
@@ -356,31 +370,48 @@ Runtime:addEventListener( "enterFrame", run );
         if (event.other.id == "player2Bullet") then
             print ('we got a live one sonny!');
             player1Bullets = player1Bullets + 1;
-             
+               --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+            
+            transition.to( event.other, {time=.0001, alpha=0.0} )
         --event.other:removeSelf();
         --event.other = nil
-    end
-    
-  
-       
-    
-            --update the score here, in face, build an updatescore function
-       
+        end
+     if (event.other.id == "triangle") then
+        print("woah");
+         --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+            
+            transition.to( event.other, {time=3000, alpha=0.0} )
+            bigObjectsOnScreen = bigObjectsOnScreen - 1;
+            --add to score here
+        end
+         if (event.other.id == "centerOrb") then
+        print("woah");
+         --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+            
+            transition.to( event.other, {time=1000, alpha=0.0} )
+            transition.to( event.other.leftOrb, {time=1000, alpha=0.0} )
+            transition.to( event.other.leftSmOrb, {time=1000, alpha=0.0} )
+            transition.to( event.other.rightOrb, {time=1000, alpha=0.0} )
+            transition.to( event.other.rightSmOrb, {time=1000, alpha=0.0} )
+            bigObjectsOnScreen = bigObjectsOnScreen - 1;
+            --add to score here
+        end
+        updateScore();
+        
         --if you collided with a big shape, remove the big shape and add to the other player's score
  
         elseif ( event.phase == "ended" ) then
  
                 
         end
-end
+    end
+	
 	--Register an event listener for when bullets enter the first goal zone
 	zone1.collision = onZone1Collision
-zone1:addEventListener( "collision", zone1 )
+    zone1:addEventListener( "collision", zone1 )
         
 
-
-	
-	local zone2 = display.newRect( 150, display.contentHeight - 150, 468, 150 )
+    local zone2 = display.newRect( 150, display.contentHeight - 150, 468, 150 )
     zone2:setFillColor(153, 0, 153, 100)
     physics.addBody(zone2, {density = 200, friction = .3, bounce = .2})
 	zone2.bodyType = "static" 
@@ -389,7 +420,7 @@ zone1:addEventListener( "collision", zone1 )
     
     zone2:addEventListener("touch", firePlayer2)
     	
-    	local function onZone2Collision( self, event )
+    local function onZone2Collision( self, event )
         if ( event.phase == "began" ) then
             print("collision with zone2!");
             --if you collided with the other player's bullet, remove the bullet
@@ -398,14 +429,40 @@ zone1:addEventListener( "collision", zone1 )
             print ('we got a live one sonny!');
             player2Bullets = player2Bullets + 1;
                   
-     --  event.other:removeSelf();
-     --  event.other = nil
-    transition.to( event.other, {time=.0001, alpha=0.0} )
-     
-            --update the score here, in face, build an updatescore function
+                --  transition.to( event.other, { delay=1, time=500, alpha=0.0, onComplete=reallyRemove } )
+            
+            --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+            
+            transition.to( event.other, {time=.0001, alpha=0.0} )
+            
+            --Runtime:removeEventListener( "enterFrame", runBall );
+            --event.other:removeSelf();
+            --event.other = nil
+           
         end
         
         --if you collided with a big shape, remove the big shape and add to the other player's score
+        
+        if (event.other.id == "triangle") then
+        print("woah");
+         --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+            
+            transition.to( event.other, {time=3000, alpha=0.0} )
+            bigObjectsOnScreen = bigObjectsOnScreen - 1;
+            --add to score here
+        end
+         if (event.other.id == "centerOrb") then
+        print("woah");
+         --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+            
+            transition.to( event.other, {time=1000, alpha=0.0} )
+            transition.to( event.other.leftOrb, {time=1000, alpha=0.0} )
+            transition.to( event.other.leftSmOrb, {time=1000, alpha=0.0} )
+            transition.to( event.other.rightOrb, {time=1000, alpha=0.0} )
+            transition.to( event.other.rightSmOrb, {time=1000, alpha=0.0} )
+            bigObjectsOnScreen = bigObjectsOnScreen - 1;
+            --add to score here
+        end
  
         elseif ( event.phase == "ended" ) then
  
@@ -414,7 +471,7 @@ zone1:addEventListener( "collision", zone1 )
 end
 	--Register an event listener for when bullets enter the first goal zone
 	zone2.collision = onZone2Collision
-zone2:addEventListener( "collision", zone2 )
+    zone2:addEventListener( "collision", zone2 )
     
     
     
