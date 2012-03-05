@@ -6,6 +6,8 @@
 
 display.setStatusBar( display.HiddenStatusBar )
 local physics = require "physics"
+--  a class I created using different method that works
+ 
 
 -- Enable Physics and Multitouch
 

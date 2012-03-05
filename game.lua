@@ -4,7 +4,8 @@
 -- Game Screen for 'Crossfire'
 --
 ----------------------------------------------------------------------------------
- 
+ local Triangle = require("Triangle") 
+ local OctoOrb = require("OctoOrb")
 local storyboard = require( "storyboard" )
 local scene = storyboard.newScene()
  
@@ -40,24 +41,7 @@ local function placeObject(whichType)
             if(whichType == 1) then
             
 
-                -- Draw a triangle
-                local triangle = display.newLine(100,100, 300,100);
-                triangle:append(200,0, 100,100);
-                triangle.width = 8;
-                triangle:setColor(100,255,100,255);
-        
-                -- Add a custom physics body shape based on the triangle shape
-                triShape = {0,0, 100,-100, 200,0}
-                physics.addBody( triangle, { density=3.0, friction=0.8, bounce=0.3, shape = triShape } )
-                triangle.id = "triangle"
-                triangle.x = 968;
-                triangle.y = 550;
-                triangle.isSleepingAllowed = false
-                triangle.isBullet = true;
-                triangle.linearDamping = 1
-                triangle.angularDamping = 1;
-        
-        
+              local triangle = Triangle.new() -- plenty of joy
 
                 -- Everything must be added to the local group to be handled appropriately on 'scene changes'
                 --   group:insert(triangle);
@@ -71,108 +55,26 @@ local function placeObject(whichType)
                 -- Add event listener for this thing to rotate
                 
                 -- Does this need to be 'returned'?
-                return triangle;
+                --return triangle;
         
             end
     
             -- Type 2 is an octo creature 
             if (whichType ==2) then
-                -- Draw a center circle
-        
-                local centerOrb = display.newCircle(-200,550, 50,50);
-       
-                
-     
-                centerOrb:setStrokeColor(255,0,0,255)
-                centerOrb.strokeWidth = 5;
-                centerOrb:setFillColor(255,0,0,180)
-        
-                -- Add a custom physics body shape based on the centerOrb shape
-                
-                physics.addBody( centerOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 50 } )
-        
-                centerOrb.isSleepingAllowed = false
-                centerOrb.isBullet = true;
-                centerOrb.linearDamping = 1
-                centerOrb.angularDamping = 1;
-                centerOrb.id = "centerOrb";
-        
-                local leftOrb = display.newCircle(-275,550, 25,25);
-                physics.addBody( leftOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
-                leftOrb.isSleepingAllowed = false
-                leftOrb.isBullet = true;
-                leftOrb.linearDamping = 1
-                leftOrb.angularDamping = 1;
-                centerOrb.leftOrb = leftOrb;
-        
-                local leftSmOrb = display.newCircle(-310,550, 10,10);
-                physics.addBody( leftSmOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 10 } )
-                leftSmOrb.isSleepingAllowed = false
-                leftSmOrb.isBullet = true;
-                leftSmOrb.linearDamping = 1
-                leftSmOrb.angularDamping = 1;
-                centerOrb.leftSmOrb = leftSmOrb;
-        
-                local rightOrb = display.newCircle(-125,550, 25,25);
-                physics.addBody( rightOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
-                rightOrb.isSleepingAllowed = false
-                rightOrb.isBullet = true;
-                rightOrb.linearDamping = 1
-                rightOrb.angularDamping = 1;
-                centerOrb.rightOrb = rightOrb;
-        
-                local rightSmOrb = display.newCircle(-90,550, 10,10);
-                physics.addBody( rightSmOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
-                rightSmOrb.isSleepingAllowed = false
-                rightSmOrb.isBullet = true;
-                rightSmOrb.linearDamping = 1
-                rightSmOrb.angularDamping = 1;
-                centerOrb.rightSmOrb = rightSmOrb;
-                -- Create joints between the orbs
-                
-                centerOrb.myJointR = physics.newJoint( "pivot", centerOrb, rightOrb, -150,550 )
-                centerOrb.myJointR.isLimitEnabled = true -- (boolean)
-                centerOrb.myJointR:setRotationLimits( -45, 45 )
+               
  
-                myJointRsm = physics.newJoint( "pivot", rightOrb, rightSmOrb, -100,550 )
-                myJointRsm.isLimitEnabled = true -- (boolean)
-                myJointRsm:setRotationLimits( -45, 45 )
- 
-                myJointL = physics.newJoint( "pivot", centerOrb, leftOrb, -250,550 )
-                myJointL.isLimitEnabled = true -- (boolean)
-                myJointL:setRotationLimits( -45, 45 )
- 
-                myJointLsm = physics.newJoint( "pivot", leftOrb, leftSmOrb, -300,550 )
-                myJointLsm.isLimitEnabled = true -- (boolean)
-                myJointLsm:setRotationLimits( -45, 45 )
- 
-                rightOrb:setStrokeColor(255,0,0,255)
-                rightOrb.strokeWidth = 5;
-                rightOrb:setFillColor(255,0,0,180)
-     
-                rightSmOrb:setStrokeColor(255,0,0,255)
-                rightSmOrb.strokeWidth = 5;
-                rightSmOrb:setFillColor(255,0,0,180)
-  
-                leftOrb:setStrokeColor(255,0,0,255)
-                leftOrb.strokeWidth = 5;
-                leftOrb:setFillColor(255,0,0,180)
-     
-                leftSmOrb:setStrokeColor(255,0,0,255)
-                leftSmOrb.strokeWidth = 5;
-                leftSmOrb:setFillColor(255,0,0,180)
- 
+              local octoOrb = OctoOrb.new() -- plenty of joy
 
-                centerOrb:applyForce(3500,0, centerOrb.x, centerOrb.y);
+                octoOrb:applyForce(3500,0, octoOrb.x, octoOrb.y);
                 
-                centerOrb:applyTorque( 1000 )
+                octoOrb:applyTorque( 1000 )
                 
                 -- Add event listener here to pulse the octobeast
 
                 bigObjectsOnScreen = bigObjectsOnScreen + 1;
                 
                 -- Does this need to be returned?
-                return centerOrb;
+               -- return centerOrb;
             end
     end
 end
@@ -331,7 +233,7 @@ function scene:enterScene( event )
         --print (runTimer);
 
         if (runTimer == 200) then
-            local newObj = placeObject(whichObj);
+            placeObject(whichObj);
             runTimer = 0;
     
             if (whichObj == 1) then
@@ -368,11 +270,11 @@ function scene:enterScene( event )
 	
 	local function onZone1Collision( self, event )
         if ( event.phase == "began" ) then
-            print("collision with zone1!");
+          --  print("collision with zone1!");
             --if you collided with the other player's bullet, remove the bullet
             --and add to current player's bullet total
         if (event.other.id == "player2Bullet") then
-            print ('we got a live one sonny!');
+       --     print ('we got a live one sonny!');
             player1Bullets = player1Bullets + 1;
                --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
             
@@ -381,23 +283,18 @@ function scene:enterScene( event )
         --event.other = nil
         end
      if (event.other.id == "triangle") then
-        print("woah");
-         --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+        print("triangle collided with goal 1");
+         event.other:fadeOut();
             
-            transition.to( event.other, {time=3000, alpha=0.0} )
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
             player2Score = player2Score + 1;
             --add to score here
         end
-         if (event.other.id == "centerOrb") then
+         if (event.other.id == "octoOrb") then
         print("woah");
          --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
             
-            transition.to( event.other, {time=1000, alpha=0.0} )
-            transition.to( event.other.leftOrb, {time=1000, alpha=0.0} )
-            transition.to( event.other.leftSmOrb, {time=1000, alpha=0.0} )
-            transition.to( event.other.rightOrb, {time=1000, alpha=0.0} )
-            transition.to( event.other.rightSmOrb, {time=1000, alpha=0.0} )
+         event.other:fadeOut();
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
             --add to score here
              player2Score = player2Score + 1;
@@ -428,11 +325,11 @@ function scene:enterScene( event )
     	
     local function onZone2Collision( self, event )
         if ( event.phase == "began" ) then
-            print("collision with zone2!");
+          --  print("collision with zone2!");
             --if you collided with the other player's bullet, remove the bullet
             --and add to current player's bullet total
         if (event.other.id == "player1Bullet") then
-            print ('we got a live one sonny!');
+            --print ('we got a live one sonny!');
             player2Bullets = player2Bullets + 1;
                   
                 --  transition.to( event.other, { delay=1, time=500, alpha=0.0, onComplete=reallyRemove } )
@@ -451,9 +348,9 @@ function scene:enterScene( event )
         
         if (event.other.id == "triangle") then
         print("woah");
-         --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+        
             
-            transition.to( event.other, {time=3000, alpha=0.0} )
+            event.other:fadeOut();
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
             --add to score here
              player1Score = player1Score + 1;
