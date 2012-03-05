@@ -23,6 +23,8 @@ local function updateScore()
 
     player1PelletNumDisplay.text = player1Bullets;
     player2PelletNumDisplay.text = player2Bullets;
+    player2ScoreDisplay.text = player2Score;
+    player1ScoreDisplay.text = player1Score;
 end
 -- Define a function to place objects on screen (note: need to figure out how to track these objects for game over removal)
 	
@@ -41,8 +43,8 @@ local function placeObject(whichType)
                 -- Draw a triangle
                 local triangle = display.newLine(100,100, 300,100);
                 triangle:append(200,0, 100,100);
-                triangle.width = 3;
-                triangle:setColor(100,100,100,255);
+                triangle.width = 8;
+                triangle:setColor(100,255,100,255);
         
                 -- Add a custom physics body shape based on the triangle shape
                 triShape = {0,0, 100,-100, 200,0}
@@ -317,6 +319,8 @@ function scene:enterScene( event )
     bigObjectsOnScreen = 0;
     player1Bullets = 20;
     player2Bullets = 20;
+    player1Score = 0;
+    player2Score = 0;
 
     -- Function that runs every frame and maintains the game
 
@@ -382,6 +386,7 @@ function scene:enterScene( event )
             
             transition.to( event.other, {time=3000, alpha=0.0} )
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
+            player2Score = player2Score + 1;
             --add to score here
         end
          if (event.other.id == "centerOrb") then
@@ -395,6 +400,7 @@ function scene:enterScene( event )
             transition.to( event.other.rightSmOrb, {time=1000, alpha=0.0} )
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
             --add to score here
+             player2Score = player2Score + 1;
         end
         updateScore();
         
@@ -450,6 +456,7 @@ function scene:enterScene( event )
             transition.to( event.other, {time=3000, alpha=0.0} )
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
             --add to score here
+             player1Score = player1Score + 1;
         end
          if (event.other.id == "centerOrb") then
         print("woah");
@@ -461,6 +468,7 @@ function scene:enterScene( event )
             transition.to( event.other.rightOrb, {time=1000, alpha=0.0} )
             transition.to( event.other.rightSmOrb, {time=1000, alpha=0.0} )
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
+             player1Score = player1Score + 1;
             --add to score here
         end
  
@@ -586,12 +594,23 @@ end
 -- Draw initial pellet #s
     player2PelletNumDisplay = display.newText( "20", 45,900, "Futura", 72 )
     player2PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
-    player2PelletNumDisplay:setTextColor(255, 300, 200)
+    player2PelletNumDisplay:setTextColor(240, 255, 240)
     
-    player1PelletNumDisplay = display.newText( "20", 45,124, "Futura", 72 )
+    player1PelletNumDisplay = display.newText( "20", 45,70, "Futura", 72 )
     player1PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
-    player1PelletNumDisplay:setTextColor(255, 300, 200)
+    player1PelletNumDisplay:setTextColor(240, 255, 240)
     player1PelletNumDisplay:rotate(180);
+    
+-- Draw initial scores
+        player2ScoreDisplay = display.newText( "0", 705,900, "Futura", 72 )
+    player2ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
+    player2ScoreDisplay:setTextColor(240, 255, 240)
+    
+    player1ScoreDisplay = display.newText( "0", 705,70, "Futura", 72 )
+    player1ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
+    player1ScoreDisplay:setTextColor(240, 255, 240)
+    player1ScoreDisplay:rotate(180);
+    
     
 group:insert(leftUpperExtend);
 group:insert(leftUpper);
