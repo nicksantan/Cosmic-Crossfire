@@ -1,5 +1,5 @@
---BALLOON CLASS
- 
+--Triangle CLASS
+  module(..., package.seeall)
 local Triangle = {}
  
 function Triangle.new()
@@ -21,7 +21,18 @@ function Triangle.new()
                 triangle.linearDamping = 1
                 triangle.angularDamping = 1;
         
-        
+          local sinCounter = 0;
+          
+          local function eachFrame()
+            sinCounter = sinCounter + .01;
+            
+            --Generate a random number to determine the chance of a 'pulse'
+           -- print("triangle enterframe");
+                triangle:applyTorque(math.sin(sinCounter)*10);
+            
+        end
+       
+        Runtime:addEventListener( "enterFrame", eachFrame )
         
       
         
@@ -35,10 +46,11 @@ function Triangle.new()
         print("fading out")
             local function goAway()
             print("...and going away");
+             Runtime:removeEventListener("enterFrame", eachFrame);
             triangle:removeSelf()
                 triangle = nil
             end
-        transition.to( triangle, {delay=1, time=3000, alpha=0.0, onComplete=goAway} )
+        transition.to( triangle, {delay=1, time=1000, alpha=0.0, onComplete=goAway} )
         end
         
                 

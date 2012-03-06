@@ -57,19 +57,19 @@ function OctoOrb.new()
                 
                 octoOrb.myJointR = physics.newJoint( "pivot", octoOrb, rightOrb, -150,550 )
                 octoOrb.myJointR.isLimitEnabled = true -- (boolean)
-                octoOrb.myJointR:setRotationLimits( -45, 45 )
+                octoOrb.myJointR:setRotationLimits( -60, 60 )
  
                 myJointRsm = physics.newJoint( "pivot", rightOrb, rightSmOrb, -100,550 )
                 myJointRsm.isLimitEnabled = true -- (boolean)
-                myJointRsm:setRotationLimits( -45, 45 )
+                myJointRsm:setRotationLimits( -60, 60 )
  
                 myJointL = physics.newJoint( "pivot", octoOrb, leftOrb, -250,550 )
                 myJointL.isLimitEnabled = true -- (boolean)
-                myJointL:setRotationLimits( -45, 45 )
+                myJointL:setRotationLimits( -60, 60 )
  
                 myJointLsm = physics.newJoint( "pivot", leftOrb, leftSmOrb, -300,550 )
                 myJointLsm.isLimitEnabled = true -- (boolean)
-                myJointLsm:setRotationLimits( -45, 45 )
+                myJointLsm:setRotationLimits( -60, 60 )
  
                 rightOrb:setStrokeColor(255,0,0,255)
                 rightOrb.strokeWidth = 5;

@@ -6,6 +6,7 @@
 ----------------------------------------------------------------------------------
  local Triangle = require("Triangle") 
  local OctoOrb = require("OctoOrb")
+  local Ball = require("Ball")
 local storyboard = require( "storyboard" )
 local scene = storyboard.newScene()
  
@@ -88,28 +89,19 @@ local function shootFrom(whichPlayer, loc)
     local group = scene.view;
     
     
-    local ball
-    local ballTimer = 0;
+   -- local ball
+  --  local ballTimer = 0;
     -- If the first player fired ...
     if (whichPlayer == 1) then
 
         -- Only fire if that player has pellets available 
         if (player1Bullets > 0) then 
         
-            ball = display.newCircle( 100, 100, 8 )
-            physics.addBody( ball, { density=10.0, friction=0.8, bounce=0.3, radius = 11 } )
-            ball.x = loc
-            ball.y = 155;
-        
-            ball.strokeWidth = 3;
-            ball:setStrokeColor(240,240,240,255);
-            ball:setFillColor(240,240, 240, 200)
-            ball.bodyType = "dynamic";
-        
+            local ball = Ball.new(loc, 155, 1) 
+            ball.id = "player1Bullet";
             -- Apply a force downward on the ball
             ball:applyForce( 0, 200, ball.x, ball.y )
-            ball.isBullet = true;
-            ball.id = "player1Bullet";
+         
             group:insert(ball);
     
             player1Bullets = player1Bullets - 1
@@ -123,20 +115,13 @@ local function shootFrom(whichPlayer, loc)
   
         -- Only fire if that player has pellets available 
         if (player2Bullets > 0) then 
-        
-            ball = display.newCircle( 100, 100, 8 )
-            physics.addBody( ball, { density=10.0, friction=0.8, bounce=0.3, radius = 11 } )
-            ball.x = loc
-            ball.y =  display.contentHeight - 155;
-       
-            ball.strokeWidth = 3;
-            ball:setStrokeColor(200,200,255,255);
-            ball:setFillColor(200,200, 255, 200)
+            local theY = display.contentHeight - 155;
+            local ball = Ball.new(loc, theY, 2) 
+            
             -- Apply a force upward on the ball
             ball:applyForce( 0, -200, ball.x, ball.y )
-            ball.isBullet = true;
-            --group:insert(ball);
-            ball.id = "player2Bullet";
+           
+        ball.id = "player2Bullet";
             player2Bullets = player2Bullets - 1
         print ("player 2 fired");
             player2PelletNumDisplay.text = player2Bullets;
@@ -146,42 +131,7 @@ local function shootFrom(whichPlayer, loc)
     -- This function eventually removes a pellet from memory if it has been on the screen too long
     
     
-    local function removeBall()
-    
-        local function reallyRemove()
-            print("ball removed");
-    
-            ball:removeSelf();
-            ball = nil
-        end
-    
-        --fade the ball out and on completion reallyRemove
-    
-    
-        transition.to( ball, { delay=1, time=500, alpha=0.0, onComplete=reallyRemove } )
-       
-    end  
-    
-    local function runBall()
-      --  print("runBall a runnin");
-        --Every frame, keep track of how long the ball has been on screen.
-        ballTimer = ballTimer + 1
-    
-        -- If the ball has been on screen a long time, remove it.
-        if (ballTimer == 1000) then
-            removeBall();
-        end
-    end
-    
-    --Add an event listener to keep track of the ball every frame.
-    Runtime:addEventListener( "enterFrame", runBall );
-    
-    -- I chose not to do it the following way because it was causing
-    -- the program to crash if the ball had already been removed.
-    -- In 10 seconds, remove the ball.
-    -- timer.performWithDelay(10000, removeBall )
-end
-
+ end
 -- These are the event listeners for tapping in the 'fire zones'
 
 local function firePlayer1(event)
@@ -278,7 +228,7 @@ function scene:enterScene( event )
             player1Bullets = player1Bullets + 1;
                --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
             
-            transition.to( event.other, {time=.0001, alpha=0.0} )
+            event.other:fadeOut();
         --event.other:removeSelf();
         --event.other = nil
         end
@@ -336,8 +286,8 @@ function scene:enterScene( event )
             
             --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
             
-            transition.to( event.other, {time=.0001, alpha=0.0} )
-            
+           
+            event.other:fadeOut();
             --Runtime:removeEventListener( "enterFrame", runBall );
             --event.other:removeSelf();
             --event.other = nil
@@ -355,15 +305,8 @@ function scene:enterScene( event )
             --add to score here
              player1Score = player1Score + 1;
         end
-         if (event.other.id == "centerOrb") then
-        print("woah");
-         --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
-            
-            transition.to( event.other, {time=1000, alpha=0.0} )
-            transition.to( event.other.leftOrb, {time=1000, alpha=0.0} )
-            transition.to( event.other.leftSmOrb, {time=1000, alpha=0.0} )
-            transition.to( event.other.rightOrb, {time=1000, alpha=0.0} )
-            transition.to( event.other.rightSmOrb, {time=1000, alpha=0.0} )
+         if (event.other.id == "octoOrb") then
+    event.other:fadeOut()
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
              player1Score = player1Score + 1;
             --add to score here
