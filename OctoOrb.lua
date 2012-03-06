@@ -2,11 +2,13 @@
  module(..., package.seeall)
 local OctoOrb = {}
  
-function OctoOrb.new()
+function OctoOrb.new(xLoc, yLoc)
               
-                local octoOrb = display.newCircle(-200,550, 50,50);
-       
+                local octoOrb = display.newCircle(xLoc,550, 50,50);
                 
+                
+                local behaviorType = math.random(2);
+                local randRot = math.random(-30,30);
      
                 octoOrb:setStrokeColor(255,0,0,255)
                 octoOrb.strokeWidth = 5;
@@ -22,7 +24,7 @@ function OctoOrb.new()
                 octoOrb.angularDamping = 1;
                 octoOrb.id = "octoOrb";
         
-                local leftOrb = display.newCircle(-275,550, 25,25);
+                local leftOrb = display.newCircle(xLoc - 75,550, 25,25);
                 physics.addBody( leftOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
                 leftOrb.isSleepingAllowed = false
                 leftOrb.isBullet = true;
@@ -30,7 +32,7 @@ function OctoOrb.new()
                 leftOrb.angularDamping = 1;
                 octoOrb.leftOrb = leftOrb;
         
-                local leftSmOrb = display.newCircle(-310,550, 10,10);
+                local leftSmOrb = display.newCircle(xLoc-110,550, 10,10);
                 physics.addBody( leftSmOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 10 } )
                 leftSmOrb.isSleepingAllowed = false
                 leftSmOrb.isBullet = true;
@@ -38,7 +40,7 @@ function OctoOrb.new()
                 leftSmOrb.angularDamping = 1;
                 octoOrb.leftSmOrb = leftSmOrb;
         
-                local rightOrb = display.newCircle(-125,550, 25,25);
+                local rightOrb = display.newCircle(xLoc+75,550, 25,25);
                 physics.addBody( rightOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
                 rightOrb.isSleepingAllowed = false
                 rightOrb.isBullet = true;
@@ -46,7 +48,7 @@ function OctoOrb.new()
                 rightOrb.angularDamping = 1;
                 octoOrb.rightOrb = rightOrb;
         
-                local rightSmOrb = display.newCircle(-90,550, 10,10);
+                local rightSmOrb = display.newCircle(xLoc+110,550, 10,10);
                 physics.addBody( rightSmOrb, { density=3.0, friction=0.8, bounce=0.3, radius = 25 } )
                 rightSmOrb.isSleepingAllowed = false
                 rightSmOrb.isBullet = true;
@@ -55,19 +57,19 @@ function OctoOrb.new()
                 octoOrb.rightSmOrb = rightSmOrb;
                 -- Create joints between the orbs
                 
-                octoOrb.myJointR = physics.newJoint( "pivot", octoOrb, rightOrb, -150,550 )
+                octoOrb.myJointR = physics.newJoint( "pivot", octoOrb, rightOrb, xLoc + 50,550 )
                 octoOrb.myJointR.isLimitEnabled = true -- (boolean)
                 octoOrb.myJointR:setRotationLimits( -60, 60 )
  
-                myJointRsm = physics.newJoint( "pivot", rightOrb, rightSmOrb, -100,550 )
+                myJointRsm = physics.newJoint( "pivot", rightOrb, rightSmOrb, xLoc+100,550 )
                 myJointRsm.isLimitEnabled = true -- (boolean)
                 myJointRsm:setRotationLimits( -60, 60 )
  
-                myJointL = physics.newJoint( "pivot", octoOrb, leftOrb, -250,550 )
+                myJointL = physics.newJoint( "pivot", octoOrb, leftOrb, xLoc-50,550 )
                 myJointL.isLimitEnabled = true -- (boolean)
                 myJointL:setRotationLimits( -60, 60 )
  
-                myJointLsm = physics.newJoint( "pivot", leftOrb, leftSmOrb, -300,550 )
+                myJointLsm = physics.newJoint( "pivot", leftOrb, leftSmOrb, xLoc-100,550 )
                 myJointLsm.isLimitEnabled = true -- (boolean)
                 myJointLsm:setRotationLimits( -60, 60 )
  
@@ -89,19 +91,25 @@ function OctoOrb.new()
  
 
         local function eachFrame()
-     
-            --Generate a random number to determine the chance of a 'pulse'
-            local randChance = math.random(1,100);
-            if (randChance < 2) then
-                --choose a random direction
-                local randX = math.random(-1000,1000);
-                local randY = math.random(-1000,1000);
-                print("randX was "..randX);
-                print("randY was "..randY);
-                octoOrb:applyForce(randX,randY,octoOrb.x,octoOrb.y);
+            
+            -- If behaviorType is 1, this is a 'pulser'
+            if (behaviorType == 1) then
+                --Generate a random number to determine the chance of a 'pulse'
+                local randChance = math.random(1,100);
+                if (randChance < 2) then
+                    --choose a random direction
+                    local randX = math.random(-1000,1000);
+                    local randY = math.random(-1000,1000);
+                    print("randX was "..randX);
+                    print("randY was "..randY);
+                    octoOrb:applyForce(randX,randY,octoOrb.x,octoOrb.y);
+                end
+            end
+            -- If behaviorType is 2, this is a spinner
+            if (behaviorType == 2) then
+            octoOrb:applyTorque(randRot);
             end
         end
-       
         Runtime:addEventListener( "enterFrame", eachFrame )
         
     

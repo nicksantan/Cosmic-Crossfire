@@ -2,10 +2,13 @@
   module(..., package.seeall)
 local Triangle = {}
  
-function Triangle.new()
+function Triangle.new(xLoc, yLoc)
         
         -- Draw a triangle
                 local triangle = display.newLine(100,100, 300,100);
+                
+                triangle.hasTouched = false;
+                local randRot = math.random(-30,30);
                 triangle:append(200,0, 100,100);
                 triangle.width = 8;
                 triangle:setColor(100,255,100,255);
@@ -14,8 +17,8 @@ function Triangle.new()
                 triShape = {0,0, 100,-100, 200,0}
                 physics.addBody( triangle, { density=3.0, friction=0.8, bounce=0.3, shape = triShape } )
                 triangle.id = "triangle"
-                triangle.x = 968;
-                triangle.y = 550;
+                triangle.x = xLoc;
+                triangle.y = yLoc;
                 triangle.isSleepingAllowed = false
                 triangle.isBullet = true;
                 triangle.linearDamping = 1
@@ -24,11 +27,12 @@ function Triangle.new()
           local sinCounter = 0;
           
           local function eachFrame()
-            sinCounter = sinCounter + .01;
+           -- sinCounter = sinCounter + .01;
             
             --Generate a random number to determine the chance of a 'pulse'
            -- print("triangle enterframe");
-                triangle:applyTorque(math.sin(sinCounter)*10);
+               -- triangle:applyTorque(math.sin(sinCounter)*10);
+               triangle:applyTorque(randRot);
             
         end
        
@@ -50,7 +54,10 @@ function Triangle.new()
             triangle:removeSelf()
                 triangle = nil
             end
-        transition.to( triangle, {delay=1, time=1000, alpha=0.0, onComplete=goAway} )
+            if (triangle.hasTouched == false) then
+                transition.to( triangle, {delay=1, time=1000, alpha=0.0, onComplete=goAway} )
+                triangle.hasTouched = true;
+            end
         end
         
                 

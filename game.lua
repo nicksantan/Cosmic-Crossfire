@@ -30,7 +30,7 @@ local function updateScore()
 end
 -- Define a function to place objects on screen (note: need to figure out how to track these objects for game over removal)
 	
-local function placeObject(whichType)
+local function placeObject(whichType, whichDir)
     
     --Only place an object if there are fewer than 4 on screen
     
@@ -38,19 +38,35 @@ local function placeObject(whichType)
     
         -- Type 1 is a triangle
     
-   
+        print(whichType .. " is the whichtype");
+        local xLoc
+        local yLoc
             if(whichType == 1) then
             
-
-              local triangle = Triangle.new() -- plenty of joy
+                if (whichDir == 1) then
+                xLoc = 968;
+                yLoc = 550;
+                end
+                
+                if (whichDir == 2) then
+                xLoc = -200;
+                yLoc = 550;
+                end
+                
+                local triangle = Triangle.new(xLoc, yLoc) -- plenty of joy
 
                 -- Everything must be added to the local group to be handled appropriately on 'scene changes'
                 --   group:insert(triangle);
         
                 --let's fire the triangle onScreen
-        
-                triangle:applyForce(-3500,0, triangle.x, triangle.y);
-         
+                
+                if (whichDir == 1) then
+                    triangle:applyForce(-3500,0, triangle.x, triangle.y);
+                end
+                if (whichDir == 2) then
+                    triangle:applyForce(3500,0, triangle.x, triangle.y);
+                end
+                
                 bigObjectsOnScreen = bigObjectsOnScreen + 1;
             
                 -- Add event listener for this thing to rotate
@@ -62,13 +78,26 @@ local function placeObject(whichType)
     
             -- Type 2 is an octo creature 
             if (whichType ==2) then
-               
- 
-              local octoOrb = OctoOrb.new() -- plenty of joy
-
-                octoOrb:applyForce(3500,0, octoOrb.x, octoOrb.y);
+                if (whichDir == 1) then
+                xLoc = 968;
+                yLoc = 550;
+                end
                 
-                octoOrb:applyTorque( 1000 )
+                if (whichDir == 2) then
+                xLoc = -200;
+                yLoc = 550;
+                end
+ 
+              local octoOrb = OctoOrb.new(xLoc,yLoc) -- plenty of joy
+if (whichDir == 1) then
+                    octoOrb:applyForce(-3500,0, octoOrb.x, octoOrb.y);
+                end
+                if (whichDir == 2) then
+                    octoOrb:applyForce(3500,0, octoOrb.x, octoOrb.y);
+                end
+             
+                local randTorque = math.random (-1000,1000)
+                octoOrb:applyTorque( randTorque )
                 
                 -- Add event listener here to pulse the octobeast
 
@@ -83,7 +112,7 @@ end
     
 -- Function that shoots a pellet - takes two arguments, which player fired, and where they fired from.
 
-local function shootFrom(whichPlayer, loc)
+local function shootFrom(whichPlayer, loc, magX, magY, totalTime)
     
     -- I don't think this works
     local group = scene.view;
@@ -97,11 +126,18 @@ local function shootFrom(whichPlayer, loc)
         -- Only fire if that player has pellets available 
         if (player1Bullets > 0) then 
         
-            local ball = Ball.new(loc, 155, 1) 
+            local ball = Ball.new(loc, 155, 1,totalTime) 
             ball.id = "player1Bullet";
             -- Apply a force downward on the ball
-            ball:applyForce( 0, 200, ball.x, ball.y )
-         
+            local chargeUpPower = totalTime - 1; 
+             if (chargeUpPower > 3) then
+            chargeUpPower = 3
+            end
+           if (chargeUpPower > 1) then
+            ball:applyForce( magX*chargeUpPower*3, magY*chargeUpPower*3, ball.x, ball.y )
+           else
+            ball:applyForce( magX, magY, ball.x, ball.y )
+           end
             group:insert(ball);
     
             player1Bullets = player1Bullets - 1
@@ -116,11 +152,18 @@ local function shootFrom(whichPlayer, loc)
         -- Only fire if that player has pellets available 
         if (player2Bullets > 0) then 
             local theY = display.contentHeight - 155;
-            local ball = Ball.new(loc, theY, 2) 
+            local ball = Ball.new(loc, theY, 2, totalTime) 
             
             -- Apply a force upward on the ball
-            ball:applyForce( 0, -200, ball.x, ball.y )
-           
+            local chargeUpPower = totalTime - 1;
+            if (chargeUpPower > 3) then
+            chargeUpPower = 3
+            end
+            if (chargeUpPower > 1) then
+            ball:applyForce( magX*chargeUpPower*3, magY*chargeUpPower*3, ball.x, ball.y )
+           else
+            ball:applyForce( magX, magY, ball.x, ball.y )
+           end
         ball.id = "player2Bullet";
             player2Bullets = player2Bullets - 1
         print ("player 2 fired");
@@ -136,21 +179,125 @@ local function shootFrom(whichPlayer, loc)
 
 local function firePlayer1(event)
 
+ local startX;
+ local startY;
+ local endX;
+ local endY;
+
+local totalTime;
+ 
     -- Note how pellet fires when the finger is lifted. Later, I will implement a 'charge up' that will change the size of the pellet based on how long the finger has been on the screen.
-    
-    if (event.phase == "ended") then
-        print (event.x);
-        shootFrom(1, event.x)
+
+   if (event.phase == "began") then
+   startTime = event.time;
+   print(startTime);
+    --start recording time
+    startX =  event.xStart;
+    startY = event.yStart;
     end
+
+ 
+
+ 
+   
+    if (event.phase == "ended") then
+    print("again, start time is " .. startTime);
+    totalTime =  (system.getTimer() - startTime) / 1000;
+    print("fire!");
+    print("total time was " .. totalTime .. " seconds");
+    --normalize this
+    local multX;
+    local multY;
+    if (event.x - event.xStart < 0) then
+    multX = -1;
+    end
+    
+    if (event.x - event.xStart >= 0) then
+    multX = 1;
+    end
+    
+    if (event.y - event.yStart < 0) then
+    multY = -1;
+    end
+    
+    if (event.y - event.yStart >= 0) then
+    multY = 1;
+    end
+    
+    magX = math.abs(event.x - event.xStart);
+    magY = math.abs(event.y - event.yStart);
+     local newMagY = -magY
+     print("magX is " .. magX);
+     print("magY is " .. magY);
+       local angle = math.atan(magY/magX)
+       local a, b = math.cos(angle)*250*multX, math.sin(angle)*250*multY
+       print("a " .. a);
+       print("b " .. b);
+    print("angle is... " .. angle);
+        shootFrom(1,event.x, a, b, totalTime) --add charge up time, and an normalized x y vector
+    end
+    
+    -- Note that other event.phases could be "began", "moved", "stationary", "cancelled"
 end
 
 local function firePlayer2(event)
 
+ local startX;
+ local startY;
+ local endX;
+ local endY;
+
+local totalTime;
+ 
     -- Note how pellet fires when the finger is lifted. Later, I will implement a 'charge up' that will change the size of the pellet based on how long the finger has been on the screen.
-    
-    print (event.x);
+
+   if (event.phase == "began") then
+   startTime = event.time;
+   print(startTime);
+    --start recording time
+    startX =  event.xStart;
+    startY = event.yStart;
+    end
+
+ 
+
+ 
+   
     if (event.phase == "ended") then
-        shootFrom(2,event.x)
+    print("again, start time is " .. startTime);
+    totalTime =  (system.getTimer() - startTime) / 1000;
+    print("fire!");
+    print("total time was " .. totalTime .. " seconds");
+    --normalize this
+    local multX;
+    local multY;
+    if (event.x - event.xStart < 0) then
+    multX = -1;
+    end
+    
+    if (event.x - event.xStart >= 0) then
+    multX = 1;
+    end
+    
+    if (event.y - event.yStart < 0) then
+    multY = -1;
+    end
+    
+    if (event.y - event.yStart >= 0) then
+    multY = 1;
+    end
+    
+    magX = math.abs(event.x - event.xStart);
+    magY = math.abs(event.y - event.yStart);
+     local newMagY = -magY
+     print("magX is " .. magX);
+     print("magY is " .. magY);
+       local angle = math.atan(magY/magX)
+       local a, b = math.cos(angle)*250*multX, math.sin(angle)*250*multY
+       print("a " .. a);
+       print("b " .. b);
+    print("angle is... " .. angle);
+        shootFrom(2,event.x, a, b, totalTime) --add charge up time, and an normalized x y vector
     end
     
     -- Note that other event.phases could be "began", "moved", "stationary", "cancelled"
@@ -183,18 +330,16 @@ function scene:enterScene( event )
         --print (runTimer);
 
         if (runTimer == 200) then
-            placeObject(whichObj);
+            local whichObject = math.random(2);
+            print("whichObject is " .. whichObject);
+            local whichDir = math.random(2);
+            placeObject(whichObject, whichDir);
             runTimer = 0;
     
-            if (whichObj == 1) then
-                whichObj = 2 
-              
-                else if (whichObj == 2) then
-                    whichObj = 1
-                end 
-            end
+            
         end
     end
+
 
     -- Start the run timer  
     runTimer = 1
@@ -227,8 +372,10 @@ function scene:enterScene( event )
        --     print ('we got a live one sonny!');
             player1Bullets = player1Bullets + 1;
                --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+                transition.to( event.other, { delay=1, time=500, alpha=0.0 } )
+            print("fading out because we hit a goal");
             
-            event.other:fadeOut();
+          --  event.other:fadeOut();
         --event.other:removeSelf();
         --event.other = nil
         end
@@ -282,12 +429,12 @@ function scene:enterScene( event )
             --print ('we got a live one sonny!');
             player2Bullets = player2Bullets + 1;
                   
-                --  transition.to( event.other, { delay=1, time=500, alpha=0.0, onComplete=reallyRemove } )
+                 transition.to( event.other, { delay=1, time=500, alpha=0.0 } )
             
-            --This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
+       -- This is an ugly hack, I want to remove the ball but I'm just making it disappear for now
             
-           
-            event.other:fadeOut();
+            print("fading out because we hit a goal");
+          --  event.other:fadeOut();
             --Runtime:removeEventListener( "enterFrame", runBall );
             --event.other:removeSelf();
             --event.other = nil
@@ -432,21 +579,22 @@ end
         
         
 -- Draw initial pellet #s
-    player2PelletNumDisplay = display.newText( "20", 45,900, "Futura", 72 )
+
+    player2PelletNumDisplay = display.newText( "20", 35,900, "Eurostile", 72 )
     player2PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
     player2PelletNumDisplay:setTextColor(240, 255, 240)
     
-    player1PelletNumDisplay = display.newText( "20", 45,70, "Futura", 72 )
+    player1PelletNumDisplay = display.newText( "20", 25,70, "Eurostile", 72 )
     player1PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
     player1PelletNumDisplay:setTextColor(240, 255, 240)
     player1PelletNumDisplay:rotate(180);
     
 -- Draw initial scores
-        player2ScoreDisplay = display.newText( "0", 705,900, "Futura", 72 )
+        player2ScoreDisplay = display.newText( "0", 675,900, "Eurostile", 72 )
     player2ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
     player2ScoreDisplay:setTextColor(240, 255, 240)
     
-    player1ScoreDisplay = display.newText( "0", 705,70, "Futura", 72 )
+    player1ScoreDisplay = display.newText( "0", 675,70, "Eurostile", 72 )
     player1ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
     player1ScoreDisplay:setTextColor(240, 255, 240)
     player1ScoreDisplay:rotate(180);

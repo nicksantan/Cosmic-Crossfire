@@ -2,12 +2,30 @@
   module(..., package.seeall)
 local Ball = {}
  
-function Ball.new(locX, locY, whichPlayer)
+function Ball.new(locX, locY, whichPlayer, touchDuration)
         print("new ball");
         -- Draw a ball
-            local ball = display.newCircle( 100, 100, 8 )
-            local ballTimerOn = true;
+        --get how long the ball was touched over 1 second
+        local chargeUp = touchDuration - 1; 
+     
+   print("1 + chargeup is " .. 1 +chargeUp)
+   if (chargeUp > 3) then
+   chargeUp = 3
+   end
+   local ball
+     if (chargeUp > 0) then
+            ball = display.newCircle( 100, 100, 8*(1+chargeUp) )
+            physics.addBody( ball, { density=10.0, friction=0.8, bounce=0.3, radius = (8*(1+chargeUp)+3) } )
+            end
+            
+            if (chargeUp <= 0) then
+            ball = display.newCircle( 100, 100, 8 )
             physics.addBody( ball, { density=10.0, friction=0.8, bounce=0.3, radius = 11 } )
+            end
+            
+            
+            local ballTimerOn = true;
+            
             ball.x = locX
             ball.y = locY;
         
@@ -40,6 +58,7 @@ function Ball.new(locX, locY, whichPlayer)
     
             -- If the ball has been on screen a long time, remove it.
             if (ballTimer == 200) then
+            print ("fading out because we've been on screen too long");
           ball:fadeOut();
           ballTimer = 0;
             end
@@ -63,7 +82,7 @@ function Ball.new(locX, locY, whichPlayer)
         function ball:fadeOut()
             print("fading out")
             local function goAway()
-                print("...and going away");
+              --  print("...and going away");
                 Runtime:removeEventListener("enterFrame", eachFrame);
                 ball:removeSelf()
                 ball = nil
