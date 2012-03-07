@@ -15,12 +15,12 @@ function Ball.new(locX, locY, whichPlayer, touchDuration)
    local ball
      if (chargeUp > 0) then
             ball = display.newCircle( 100, 100, 8*(1+chargeUp) )
-            physics.addBody( ball, { density=10.0, friction=0.8, bounce=0.3, radius = (8*(1+chargeUp)+3) } )
+            physics.addBody( ball, { density=20.0, friction=0.8, bounce=0.3, radius = (8*(1+chargeUp)+3) } )
             end
             
             if (chargeUp <= 0) then
             ball = display.newCircle( 100, 100, 8 )
-            physics.addBody( ball, { density=10.0, friction=0.8, bounce=0.3, radius = 11 } )
+            physics.addBody( ball, { density=20.0, friction=0.8, bounce=0.3, radius = 11 } )
             end
             
             
@@ -32,10 +32,10 @@ function Ball.new(locX, locY, whichPlayer, touchDuration)
             ball.strokeWidth = 3;
             ball:setStrokeColor(240,240,240,255);
             if (whichPlayer == 1) then
-            ball:setFillColor(240,240, 240, 200)
+            ball:setFillColor(240,240,255,180)
             end
              if (whichPlayer == 1) then
-            ball:setFillColor(220,220, 255, 200)
+            ball:setFillColor(220,220, 255, 180)
             end
             
             ball.bodyType = "dynamic";

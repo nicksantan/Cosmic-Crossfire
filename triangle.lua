@@ -11,7 +11,8 @@ function Triangle.new(xLoc, yLoc)
                 local randRot = math.random(-30,30);
                 triangle:append(200,0, 100,100);
                 triangle.width = 8;
-                triangle:setColor(100,255,100,255);
+               -- triangle:setColor(100,255,100,255);
+               triangle:setColor(240,240,255,255);
         
                 -- Add a custom physics body shape based on the triangle shape
                 triShape = {0,0, 100,-100, 200,0}

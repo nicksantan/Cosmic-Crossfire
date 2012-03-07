@@ -10,9 +10,9 @@ function OctoOrb.new(xLoc, yLoc)
                 local behaviorType = math.random(2);
                 local randRot = math.random(-30,30);
      
-                octoOrb:setStrokeColor(255,0,0,255)
+                octoOrb:setStrokeColor(240,240,255,255)
                 octoOrb.strokeWidth = 5;
-                octoOrb:setFillColor(255,0,0,180)
+                octoOrb:setFillColor(220,220,255,180)
         
                 -- Add a custom physics body shape based on the octoOrb shape
                 
@@ -73,21 +73,21 @@ function OctoOrb.new(xLoc, yLoc)
                 myJointLsm.isLimitEnabled = true -- (boolean)
                 myJointLsm:setRotationLimits( -60, 60 )
  
-                rightOrb:setStrokeColor(255,0,0,255)
+                rightOrb:setStrokeColor(240,240,255,255)
                 rightOrb.strokeWidth = 5;
-                rightOrb:setFillColor(255,0,0,180)
+                rightOrb:setFillColor(220,220,255,180)
      
-                rightSmOrb:setStrokeColor(255,0,0,255)
+                rightSmOrb:setStrokeColor(240,240,255,255)
                 rightSmOrb.strokeWidth = 5;
-                rightSmOrb:setFillColor(255,0,0,180)
+                rightSmOrb:setFillColor(220,220,255,180)
   
-                leftOrb:setStrokeColor(255,0,0,255)
+                leftOrb:setStrokeColor(220,220,255,255)
                 leftOrb.strokeWidth = 5;
-                leftOrb:setFillColor(255,0,0,180)
+                leftOrb:setFillColor(220,220,255,180)
      
-                leftSmOrb:setStrokeColor(255,0,0,255)
+                leftSmOrb:setStrokeColor(240,240,255,255)
                 leftSmOrb.strokeWidth = 5;
-                leftSmOrb:setFillColor(255,0,0,180)
+                leftSmOrb:setFillColor(220,220,255,180)
  
 
         local function eachFrame()

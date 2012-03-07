@@ -5,6 +5,7 @@
 --
 ----------------------------------------------------------------------------------
  local Triangle = require("Triangle") 
+  local Square = require("Square") 
  local OctoOrb = require("OctoOrb")
   local Ball = require("Ball")
 local storyboard = require( "storyboard" )
@@ -18,6 +19,23 @@ end
 -------------------------------------------------------------------------------
 -- Custom functions for use later in the game
 -------------------------------------------------------------------------------
+
+
+local function addToPellets(whichPlayer, howMany)
+    if (whichPlayer == 1) then
+
+        if (player1Bullets < 50) then
+            player1Bullets = player1Bullets + howMany;
+        end
+    end
+
+    if (whichPlayer ==2) then
+        if (player2Bullets < 50) then
+            player2Bullets = player2Bullets + howMany;
+        end
+    end
+
+end
 
 -- A function to update the score
 
@@ -41,6 +59,41 @@ local function placeObject(whichType, whichDir)
         print(whichType .. " is the whichtype");
         local xLoc
         local yLoc
+        --Factor this down in the future
+        if(whichType == 3) then
+            
+                if (whichDir == 1) then
+                xLoc = 968;
+                yLoc = 550;
+                end
+                
+                if (whichDir == 2) then
+                xLoc = -200;
+                yLoc = 550;
+                end
+                
+                local square = Square.new(xLoc, yLoc) -- plenty of joy
+
+                -- Everything must be added to the local group to be handled appropriately on 'scene changes'
+                --   group:insert(triangle);
+        
+                --let's fire the triangle onScreen
+                
+                if (whichDir == 1) then
+                    square:applyForce(-3500,0, square.x, square.y);
+                end
+                if (whichDir == 2) then
+                    square:applyForce(3500,0, square.x, square.y);
+                end
+                
+                bigObjectsOnScreen = bigObjectsOnScreen + 1;
+            
+                -- Add event listener for this thing to rotate
+                
+                -- Does this need to be 'returned'?
+                --return triangle;
+        
+            end
             if(whichType == 1) then
             
                 if (whichDir == 1) then
@@ -129,12 +182,13 @@ local function shootFrom(whichPlayer, loc, magX, magY, totalTime)
             local ball = Ball.new(loc, 155, 1,totalTime) 
             ball.id = "player1Bullet";
             -- Apply a force downward on the ball
-            local chargeUpPower = totalTime - 1; 
+            local chargeUpPower = totalTime; 
+            print("chargeUp Power is... " .. chargeUpPower);
              if (chargeUpPower > 3) then
             chargeUpPower = 3
             end
            if (chargeUpPower > 1) then
-            ball:applyForce( magX*chargeUpPower*3, magY*chargeUpPower*3, ball.x, ball.y )
+            ball:applyForce( magX*chargeUpPower*4, magY*chargeUpPower*4, ball.x, ball.y )
            else
             ball:applyForce( magX, magY, ball.x, ball.y )
            end
@@ -156,11 +210,12 @@ local function shootFrom(whichPlayer, loc, magX, magY, totalTime)
             
             -- Apply a force upward on the ball
             local chargeUpPower = totalTime - 1;
+               print("chargeUp Power is.... " .. chargeUpPower);
             if (chargeUpPower > 3) then
             chargeUpPower = 3
             end
-            if (chargeUpPower > 1) then
-            ball:applyForce( magX*chargeUpPower*3, magY*chargeUpPower*3, ball.x, ball.y )
+            if (chargeUpPower > 0) then
+            ball:applyForce( magX*chargeUpPower*4, magY*chargeUpPower*4, ball.x, ball.y )
            else
             ball:applyForce( magX, magY, ball.x, ball.y )
            end
@@ -230,11 +285,14 @@ local totalTime;
      print("magX is " .. magX);
      print("magY is " .. magY);
        local angle = math.atan(magY/magX)
-       local a, b = math.cos(angle)*250*multX, math.sin(angle)*250*multY
+       local a, b = math.cos(angle)*500*multX, math.sin(angle)*500*multY
        print("a " .. a);
        print("b " .. b);
     print("angle is... " .. angle);
+   if (magY ~= 0) then
+    print ("it ain't nan");
         shootFrom(1,event.x, a, b, totalTime) --add charge up time, and an normalized x y vector
+        end
     end
     
     -- Note that other event.phases could be "began", "moved", "stationary", "cancelled"
@@ -293,11 +351,14 @@ local totalTime;
      print("magX is " .. magX);
      print("magY is " .. magY);
        local angle = math.atan(magY/magX)
-       local a, b = math.cos(angle)*250*multX, math.sin(angle)*250*multY
+       local a, b = math.cos(angle)*500*multX, math.sin(angle)*500*multY
        print("a " .. a);
        print("b " .. b);
     print("angle is... " .. angle);
+     if (magY ~= 0) then
+    print ("it ain't nan");
         shootFrom(2,event.x, a, b, totalTime) --add charge up time, and an normalized x y vector
+        end
     end
     
     -- Note that other event.phases could be "began", "moved", "stationary", "cancelled"
@@ -316,8 +377,8 @@ function scene:enterScene( event )
     ---------------------------
 
     bigObjectsOnScreen = 0;
-    player1Bullets = 20;
-    player2Bullets = 20;
+    player1Bullets = 40;
+    player2Bullets = 40;
     player1Score = 0;
     player2Score = 0;
 
@@ -328,15 +389,18 @@ function scene:enterScene( event )
         runTimer = runTimer + 1
         updateScore();
         --print (runTimer);
-
-        if (runTimer == 200) then
-            local whichObject = math.random(2);
+print("bigObjectsOnScreen = " .. bigObjectsOnScreen);
+        if (runTimer % 200 == 0) then
+            local whichObject = math.random(3);
             print("whichObject is " .. whichObject);
             local whichDir = math.random(2);
             placeObject(whichObject, whichDir);
-            runTimer = 0;
-    
-            
+          --  runTimer = 0;    
+        end
+         if (runTimer % 100 == 0) then
+            addToPellets(1,1)
+            addToPellets(2,1);
+          --  runTimer = 0;    
         end
     end
 
@@ -352,15 +416,18 @@ function scene:enterScene( event )
     -- Create two goal zones
     
     local zone1 = display.newRect( 150, 0, 468, 150 )
-	zone1:setFillColor(153, 0, 153, 100)
+	zone1:setFillColor(100, 100, 255, 120)
 	physics.addBody(zone1, {density = 200, friction = .3, bounce = .2})
 	zone1.bodyType = "static" 
 	zone1.isSensor = true;
 	group:insert(zone1)
 	
+	local zone1Shadow = display.newRect(150,0,468,450)
+	zone1Shadow:setFillColor(0,0,0,0);
+	group:insert(zone1Shadow);
 	-- Register an event listener for touching the first goal zone
 	
-	zone1:addEventListener("touch", firePlayer1)
+	zone1Shadow:addEventListener("touch", firePlayer1)
 	
 	
 	local function onZone1Collision( self, event )
@@ -379,7 +446,7 @@ function scene:enterScene( event )
         --event.other:removeSelf();
         --event.other = nil
         end
-     if (event.other.id == "triangle") then
+     if (event.other.id == "triangle" or event.other.id == "square") then
         print("triangle collided with goal 1");
          event.other:fadeOut();
             
@@ -412,13 +479,18 @@ function scene:enterScene( event )
         
 
     local zone2 = display.newRect( 150, display.contentHeight - 150, 468, 150 )
-    zone2:setFillColor(153, 0, 153, 100)
+    zone2:setFillColor(100, 100, 255, 120)
     physics.addBody(zone2, {density = 200, friction = .3, bounce = .2})
 	zone2.bodyType = "static" 
     zone2.isSensor = true;
     -- Register an event listener for touching the second goal zone
-    
-    zone2:addEventListener("touch", firePlayer2)
+    	local zone2Shadow = display.newRect(150,display.contentHeight-450,468,450)
+	zone2Shadow:setFillColor(0,0,0,0);
+	group:insert(zone2Shadow);
+	-- Register an event listener for touching the first goal zone
+	
+	
+    zone2Shadow:addEventListener("touch", firePlayer2)
     	
     local function onZone2Collision( self, event )
         if ( event.phase == "began" ) then
@@ -443,7 +515,7 @@ function scene:enterScene( event )
         
         --if you collided with a big shape, remove the big shape and add to the other player's score
         
-        if (event.other.id == "triangle") then
+        if (event.other.id == "triangle" or event.other.id == "square") then
         print("woah");
         
             
@@ -480,7 +552,7 @@ end
         leftUpper:append(25,394);
         leftUpper:append(0,394);
         leftUpper.width = 3;
-        leftUpper:setColor(255,255,255,255);
+        leftUpper:setColor(240,240,255,255);
         
         -- Box2d doesn't allow convex shapes, so I create a second shape to represent the physics object
         local leftUpperExtend = display.newRect(0,275,25,119)
@@ -532,7 +604,7 @@ end
         leftLower:append(25,630);
         leftLower:append(0,630);
         leftLower.width = 3;
-        leftLower:setColor(255,255,255,255);
+        leftLower:setColor(240,240,255,255);
         
         -- Box2d doesn't allow convex shapes, so I create a second shape to represent the physics object
         local leftLowerExtend = display.newRect(0,630,25,119)
@@ -558,7 +630,7 @@ end
         rightLower:append(743,630);
         rightLower:append(768,630);
         rightLower.width = 3;
-        rightLower:setColor(255,255,255,255);
+        rightLower:setColor(240,240,255,255);
         
         -- Box2d doesn't allow convex shapes, so I create a second shape to represent the physics object
         local rightLowerExtend = display.newRect(743,630,25,119)
@@ -582,21 +654,21 @@ end
 
     player2PelletNumDisplay = display.newText( "20", 35,900, "Eurostile", 72 )
     player2PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
-    player2PelletNumDisplay:setTextColor(240, 255, 240)
+    player2PelletNumDisplay:setTextColor(240, 240, 255)
     
     player1PelletNumDisplay = display.newText( "20", 25,70, "Eurostile", 72 )
     player1PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
-    player1PelletNumDisplay:setTextColor(240, 255, 240)
+    player1PelletNumDisplay:setTextColor(240, 240, 255)
     player1PelletNumDisplay:rotate(180);
     
 -- Draw initial scores
         player2ScoreDisplay = display.newText( "0", 675,900, "Eurostile", 72 )
     player2ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
-    player2ScoreDisplay:setTextColor(240, 255, 240)
+    player2ScoreDisplay:setTextColor(240, 240, 255)
     
     player1ScoreDisplay = display.newText( "0", 675,70, "Eurostile", 72 )
     player1ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
-    player1ScoreDisplay:setTextColor(240, 255, 240)
+    player1ScoreDisplay:setTextColor(240, 240, 255)
     player1ScoreDisplay:rotate(180);
     
     

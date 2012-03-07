@@ -1,0 +1,13 @@
+settings =
+{
+        iphone =
+        {
+                plist =
+                {       UIApplicationExitsOnSuspend = true,
+                        UIAppFonts = 
+                        {
+                                "Eurosti.ttf"
+                        }
+                },
+        },
+}
