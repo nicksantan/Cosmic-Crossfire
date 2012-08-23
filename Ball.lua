@@ -28,45 +28,37 @@ function Ball.new(locX, locY, whichPlayer, touchDuration)
             
             ball.x = locX
             ball.y = locY;
-        
+        --  ball.id = "ball";
             ball.strokeWidth = 3;
-            ball:setStrokeColor(240,240,240,255);
+            ball:setStrokeColor(0,0,0,255);
             if (whichPlayer == 1) then
-            ball:setFillColor(240,240,255,180)
+                ball:setFillColor(0,0,0,255)
             end
-             if (whichPlayer == 1) then
-            ball:setFillColor(220,220, 255, 180)
+            if (whichPlayer == 2) then
+                ball:setFillColor(255,255, 255, 180)
             end
             
             ball.bodyType = "dynamic";
             
-               ball.isBullet = true;
+            ball.isBullet = true;
             local ballTimer = 0;  
           
         local function eachFrame()
             
             --Every frame, keep track of how long the ball has been on screen.
             
- 
-            
-            
-            
-            
             if (ballTimerOn == true) then
-            ballTimer = ballTimer + 1
+                ballTimer = ballTimer + 1
             end
     
             -- If the ball has been on screen a long time, remove it.
             if (ballTimer == 200) then
-            print ("fading out because we've been on screen too long");
-          ball:fadeOut();
-          ballTimer = 0;
+                print ("fading out because we've been on screen too long");
+                ball:fadeOut();
+                ballTimer = 0;
             end
         end
     
-      
-      
-      
       
       
       --Add an event listener to keep track of the ball every frame.

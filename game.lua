@@ -4,13 +4,22 @@
 -- Game Screen for 'Crossfire'
 --
 ----------------------------------------------------------------------------------
- local Triangle = require("Triangle") 
-  local Square = require("Square") 
- local OctoOrb = require("OctoOrb")
-  local Ball = require("Ball")
+local Triangle = require("Triangle") 
+local Square = require("Square") 
+local OctoOrb = require("OctoOrb")
+local Ball = require("Ball")
+local Snake = require("Snake")
+local Attractor = require("Attractor");
 local storyboard = require( "storyboard" )
+local widget = require "widget"
+require("displayex")
+require("mathlib")
+
 local scene = storyboard.newScene()
- 
+
+-- create a display group
+local group1 = display.newGroup()
+
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
     local group = self.view
@@ -19,11 +28,65 @@ end
 -------------------------------------------------------------------------------
 -- Custom functions for use later in the game
 -------------------------------------------------------------------------------
+local function showGameOver()
 
+ local function onButtonRelease( event )
+            local btn = event.target
+            print( "User has pressed and released the button with id: " .. btn.id )
+            if (btn.id == "playAgain") then
+                -- gameMode = "points"
+                gameOn = true;
+                -- reset all game variables here
+            end
+    
+            if (btn.id == "mainMenu") then
+                -- go to title
+                storyboard.gotoScene( "title" )
+    
+            end
+    
+            display.remove( playAgainButton )
+            display.remove( mainMenuButton )
+            playAgainButton = nil;
+            mainMenuButton = nil;
+        end
+ playAgainButton = widget.newButton{
+            label = "Play Again",
+            font = "HelveticaNeue-Bold",
+            fontSize = 16,
+            id = "playAgain",
+            onRelease = onButtonRelease
+        }       
+           mainMenuButton = widget.newButton{
+            label = "Main Menu",
+            font = "HelveticaNeue-Bold",
+            fontSize = 16,
+            id = "mainMenu",
+            onRelease = onButtonRelease
+        }
+
+        playAgainButton.x = 300
+        playAgainButton.y = 400
+        mainMenuButton.x = 600
+        mainMenuButton.y = 400
+end
+
+local function gameOver(whoWon)
+    gameOn = false;
+    --remove all enemies
+    for i=group1.numChildren,1,-1 do
+        local child = group1[i]
+        attractorPresent = false;
+        if (child ~=nil) then
+            child:fadeOut()
+        end
+    end
+    showGameOver();    
+    print ("game over, player "..whoWon.." won!");
+end
 
 local function addToPellets(whichPlayer, howMany)
     if (whichPlayer == 1) then
-
         if (player1Bullets < 50) then
             player1Bullets = player1Bullets + howMany;
         end
@@ -40,21 +103,81 @@ end
 -- A function to update the score
 
 local function updateScore()
-
     player1PelletNumDisplay.text = player1Bullets;
     player2PelletNumDisplay.text = player2Bullets;
     player2ScoreDisplay.text = player2Score;
     player1ScoreDisplay.text = player1Score;
+    
+    -- 
+    --check for game over conditions
+    
+    if (gameMode == "points") then
+    print (pointLimit);
+        -- check for score win
+        if (player1Score >= pointLimit) then
+            gameOver(1);
+        
+        elseif (player2Score >= pointLimit) then
+            gameOver(2);
+        end
+    end
 end
 -- Define a function to place objects on screen (note: need to figure out how to track these objects for game over removal)
 	
 local function placeObject(whichType, whichDir)
     
-    --Only place an object if there are fewer than 4 on screen
+    --Only place an object if there are fewer than 4 on screen, the exception being the 'attractor'and the snake
+    
+    --Snake
+    if(whichType == 4) then
+            
+                if (whichDir == 1) then
+                xLoc = 550;
+                yLoc = 988;
+                end
+                
+                if (whichDir == 2) then
+                xLoc = 550;
+                yLoc = -200;
+                end
+                
+                local snake = Snake.new(xLoc, yLoc, whichDir) -- plenty of joy
+group1:insert( snake )
+                
+                if (whichDir == 1) then
+                    snake:applyForce(0,-1000, snake.x, snake.y);
+                end
+                if (whichDir == 2) then
+                    snake:applyForce(-1000,0, snake.x, snake.y);
+                end
+    end
+    -- Attractor
+    if(whichType == 5) then
+            
+                if (whichDir == 1) then
+                xLoc = 550;
+                yLoc = 788;
+                end
+                
+                if (whichDir == 2) then
+                xLoc = 550;
+                yLoc = -20;
+                end
+                
+                attractor = Attractor.new(xLoc, yLoc) -- plenty of joy
+                group1:insert( attractor )
+                
+                if (whichDir == 1) then
+                    attractor:applyForce(0,-1000, attractor.x, attractor.y);
+                end
+                if (whichDir == 2) then
+                    attractor:applyForce(0,1000, attractor.x, attractor.y);
+                end
+    end
     
     if (bigObjectsOnScreen < 4) then
     
-        -- Type 1 is a triangle
+      
     
         print(whichType .. " is the whichtype");
         local xLoc
@@ -63,27 +186,27 @@ local function placeObject(whichType, whichDir)
         if(whichType == 3) then
             
                 if (whichDir == 1) then
-                xLoc = 968;
-                yLoc = 550;
+                xLoc = 550;
+                yLoc = 968;
                 end
                 
                 if (whichDir == 2) then
-                xLoc = -200;
-                yLoc = 550;
+                xLoc = 550;
+                yLoc = -200;
                 end
                 
                 local square = Square.new(xLoc, yLoc) -- plenty of joy
-
+                group1:insert( square )
                 -- Everything must be added to the local group to be handled appropriately on 'scene changes'
                 --   group:insert(triangle);
         
                 --let's fire the triangle onScreen
                 
                 if (whichDir == 1) then
-                    square:applyForce(-3500,0, square.x, square.y);
+                    square:applyForce(0,-3500, square.x, square.y);
                 end
                 if (whichDir == 2) then
-                    square:applyForce(3500,0, square.x, square.y);
+                    square:applyForce(0,3500, square.x, square.y);
                 end
                 
                 bigObjectsOnScreen = bigObjectsOnScreen + 1;
@@ -97,27 +220,27 @@ local function placeObject(whichType, whichDir)
             if(whichType == 1) then
             
                 if (whichDir == 1) then
-                xLoc = 968;
-                yLoc = 550;
+                xLoc = 550;
+                yLoc = 968;
                 end
                 
                 if (whichDir == 2) then
-                xLoc = -200;
-                yLoc = 550;
+                xLoc = 550;
+                yLoc = -200;
                 end
                 
                 local triangle = Triangle.new(xLoc, yLoc) -- plenty of joy
-
+                group1:insert( triangle )
                 -- Everything must be added to the local group to be handled appropriately on 'scene changes'
                 --   group:insert(triangle);
         
                 --let's fire the triangle onScreen
                 
                 if (whichDir == 1) then
-                    triangle:applyForce(-3500,0, triangle.x, triangle.y);
+                    triangle:applyForce(0,-3400, triangle.x, triangle.y);
                 end
                 if (whichDir == 2) then
-                    triangle:applyForce(3500,0, triangle.x, triangle.y);
+                    triangle:applyForce(0,3400, triangle.x, triangle.y);
                 end
                 
                 bigObjectsOnScreen = bigObjectsOnScreen + 1;
@@ -132,21 +255,22 @@ local function placeObject(whichType, whichDir)
             -- Type 2 is an octo creature 
             if (whichType ==2) then
                 if (whichDir == 1) then
-                xLoc = 968;
-                yLoc = 550;
+                xLoc = 550;
+                yLoc = 968;
                 end
                 
                 if (whichDir == 2) then
-                xLoc = -200;
-                yLoc = 550;
+                xLoc = 550;
+                yLoc = -200;
                 end
  
               local octoOrb = OctoOrb.new(xLoc,yLoc) -- plenty of joy
-if (whichDir == 1) then
-                    octoOrb:applyForce(-3500,0, octoOrb.x, octoOrb.y);
+              group1:insert( octoOrb )
+                if (whichDir == 1) then
+                    octoOrb:applyForce(0,-3500, octoOrb.x, octoOrb.y);
                 end
                 if (whichDir == 2) then
-                    octoOrb:applyForce(3500,0, octoOrb.x, octoOrb.y);
+                    octoOrb:applyForce(0,3500, octoOrb.x, octoOrb.y);
                 end
              
                 local randTorque = math.random (-1000,1000)
@@ -166,48 +290,51 @@ end
 -- Function that shoots a pellet - takes two arguments, which player fired, and where they fired from.
 
 local function shootFrom(whichPlayer, loc, magX, magY, totalTime)
+    --only fire if the game is on.
+    if (gameOn) then
     
-    -- I don't think this works
-    local group = scene.view;
+        -- I don't think this works
+        local group = scene.view;
     
     
-   -- local ball
-  --  local ballTimer = 0;
-    -- If the first player fired ...
-    if (whichPlayer == 1) then
+        -- local ball
+        --  local ballTimer = 0;
+        -- If the first player fired ...
+        if (whichPlayer == 1) then
 
-        -- Only fire if that player has pellets available 
-        if (player1Bullets > 0) then 
+            -- Only fire if that player has pellets available 
+            if (player1Bullets > 0) then 
         
-            local ball = Ball.new(loc, 155, 1,totalTime) 
-            ball.id = "player1Bullet";
-            -- Apply a force downward on the ball
-            local chargeUpPower = totalTime; 
-            print("chargeUp Power is... " .. chargeUpPower);
-             if (chargeUpPower > 3) then
-            chargeUpPower = 3
+                local ball = Ball.new(155, loc, 1,totalTime) 
+                ball.id = "player1Bullet";
+                -- Apply a force downward on the ball
+                local chargeUpPower = totalTime; 
+                print("chargeUp Power is... " .. chargeUpPower);
+                if (chargeUpPower > 3) then
+                    chargeUpPower = 3
+                end
+                if (chargeUpPower > 1) then
+                    ball:applyForce( magX*chargeUpPower*4, magY*chargeUpPower*4, ball.x, ball.y )
+                else
+                    ball:applyForce( magX, magY, ball.x, ball.y )
+                end
+            --  group:insert(ball);
+            --  group1:insert( ball )
+                print(group1.numChildren .. " is your number of NumChildren");
+                player1Bullets = player1Bullets - 1
+                player1PelletNumDisplay.text = player1Bullets;
             end
-           if (chargeUpPower > 1) then
-            ball:applyForce( magX*chargeUpPower*4, magY*chargeUpPower*4, ball.x, ball.y )
-           else
-            ball:applyForce( magX, magY, ball.x, ball.y )
-           end
-            group:insert(ball);
-    
-            player1Bullets = player1Bullets - 1
-            player1PelletNumDisplay.text = player1Bullets;
         end
-    end
 
-    -- If the second player fired...
+        -- If the second player fired...
     
-    if (whichPlayer == 2) then
+        if (whichPlayer == 2) then
   
         -- Only fire if that player has pellets available 
         if (player2Bullets > 0) then 
-            local theY = display.contentHeight - 155;
-            local ball = Ball.new(loc, theY, 2, totalTime) 
-            
+            local theX = display.contentWidth - 155;
+            local ball = Ball.new(869, loc, 2, totalTime) 
+            print("player 2 fired");
             -- Apply a force upward on the ball
             local chargeUpPower = totalTime - 1;
                print("chargeUp Power is.... " .. chargeUpPower);
@@ -228,7 +355,7 @@ local function shootFrom(whichPlayer, loc, magX, magY, totalTime)
 
     -- This function eventually removes a pellet from memory if it has been on the screen too long
     
-    
+ end   
  end
 -- These are the event listeners for tapping in the 'fire zones'
 
@@ -256,6 +383,7 @@ local totalTime;
  
    
     if (event.phase == "ended") then
+    if (startTime ~= nil) then
     print("again, start time is " .. startTime);
     totalTime =  (system.getTimer() - startTime) / 1000;
     print("fire!");
@@ -263,37 +391,52 @@ local totalTime;
     --normalize this
     local multX;
     local multY;
+    
+    -- (Note, this runs when a finger is 'lifted' from the screen)
+    
+    -- Hacky workaround to account for negative distance values and inverted y-coord system
+    
     if (event.x - event.xStart < 0) then
-    multX = -1;
+        multX = -1;
     end
-    
     if (event.x - event.xStart >= 0) then
-    multX = 1;
+        multX = 1;
     end
-    
     if (event.y - event.yStart < 0) then
-    multY = -1;
+        multY = -1;
+    end
+    if (event.y - event.yStart >= 0) then
+        multY = 1;
     end
     
-    if (event.y - event.yStart >= 0) then
-    multY = 1;
-    end
+    -- Get the absolute value of the distance between where the swipe ended and where it began
     
     magX = math.abs(event.x - event.xStart);
     magY = math.abs(event.y - event.yStart);
-     local newMagY = -magY
-     print("magX is " .. magX);
-     print("magY is " .. magY);
-       local angle = math.atan(magY/magX)
-       local a, b = math.cos(angle)*500*multX, math.sin(angle)*500*multY
-       print("a " .. a);
-       print("b " .. b);
-    print("angle is... " .. angle);
-   if (magY ~= 0) then
-    print ("it ain't nan");
-        shootFrom(1,event.x, a, b, totalTime) --add charge up time, and an normalized x y vector
-        end
+    
+    -- print("magX is " .. magX);
+    -- print("magY is " .. magY);
+       
+    -- Get the angle of the shot by taking the inverse tangent of the y 'distance' over the x 'distance' (TOA = Tangent: Opposite over Adjacent!)
+    
+    local angle = math.atan(magY/magX)
+    
+    local constantForce = 500;
+    
+    -- Normalize the force using cosine and sine and multiplying by the desired constant force. Also, multiply by multX and multY, my hacky 'direction' handlers.
+    
+    local xPower = math.cos(angle)*constantForce*multX
+    local yPower = math.sin(angle)*constantForce*multY
+        
+    -- print("angle is... " .. angle);
+   
+    -- If the distance of y is zero (user taps rather than swipes), angle can return 'undefined' and crash the program. Only fire if the distance between y-values is not zero. (Note that '~=' in Lua is the equivalent of '!=' in other languages).
+    
+    if (magX ~= 0) then 
+        shootFrom(1,event.y, xPower, yPower, totalTime) 
     end
+    end
+end
     
     -- Note that other event.phases could be "began", "moved", "stationary", "cancelled"
 end
@@ -322,6 +465,7 @@ local totalTime;
  
    
     if (event.phase == "ended") then
+    if (startTime ~=nil) then
     print("again, start time is " .. startTime);
     totalTime =  (system.getTimer() - startTime) / 1000;
     print("fire!");
@@ -355,9 +499,10 @@ local totalTime;
        print("a " .. a);
        print("b " .. b);
     print("angle is... " .. angle);
-     if (magY ~= 0) then
+     if (magX ~= 0) then
     print ("it ain't nan");
-        shootFrom(2,event.x, a, b, totalTime) --add charge up time, and an normalized x y vector
+    print("are we tryin to shoot from 2?");
+        shootFrom(2,event.y, a, b, totalTime) --add charge up time, and an normalized x y vector
         end
     end
     
@@ -365,7 +510,7 @@ local totalTime;
 end
  
 
-
+end
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
     local group = self.view
@@ -375,36 +520,83 @@ function scene:enterScene( event )
     ---------------------------
     -- Set initial variables for the game
     ---------------------------
-
+    testGlobal = 0;
     bigObjectsOnScreen = 0;
     player1Bullets = 40;
     player2Bullets = 40;
     player1Score = 0;
     player2Score = 0;
+    pointLimit = 2;
+    local startTime;
+    attractorPresent = false;
+    mono = {0,0,0,255};
+    gameOn = true;
 
     -- Function that runs every frame and maintains the game
 
     --should this be a local function here? probably not
     local function run()
+    
+    -- only run if the game is on
+   -- print (gameOn);
+    if (gameOn == true) then
+    
         runTimer = runTimer + 1
+         if (attractorPresent == true) then
+        if (attractor ~= nil) then
+        if (attractor.y < -21 or attractor.y > 789) then
+                print (attractor.x)
+                attractorPresent = false;
+                attractor:fadeOut();
+                
+            end
+            end
+        end
         updateScore();
+     
+       -- print(bigObjectsOnScreen);
+       -- print(runTimer);
+      
+       
         --print (runTimer);
-print("bigObjectsOnScreen = " .. bigObjectsOnScreen);
+       -- print("bigObjectsOnScreen = " .. bigObjectsOnScreen);
+        if (runTimer % 1000 == 0) then
+             bigObjectsOnScreen = bigObjectsOnScreen - 1;
+        end
         if (runTimer % 200 == 0) then
-            local whichObject = math.random(3);
+          -- local whichObject = 5;
+           local whichObject = math.random(4);
             print("whichObject is " .. whichObject);
             local whichDir = math.random(2);
-            placeObject(whichObject, whichDir);
+            placeObject(whichObject, whichDir); --wasWhichObject
           --  runTimer = 0;    
         end
+        if (runTimer % 300 == 0) then
+            -- only fire an attractor if there isn't one on screen
+            print(attractorPresent);
+            if (attractorPresent == false) then
+                print("checking for an attractor")
+                local randomChance = math.random(100);
+                if (randomChance < 80) then
+                    print("fire an attractor!")
+                    attractorPresent = true;
+                    local whichDir = math.random(2);
+                    placeObject(5, whichDir);
+                end
+            end
+        end
          if (runTimer % 100 == 0) then
+         --put in a regen rate here
             addToPellets(1,1)
             addToPellets(2,1);
           --  runTimer = 0;    
         end
+          if (bigObjectsOnScreen < 0 ) then
+        bigObjectsOnScreen = 0;
+        end
     end
 
-
+end
     -- Start the run timer  
     runTimer = 1
     
@@ -415,14 +607,14 @@ print("bigObjectsOnScreen = " .. bigObjectsOnScreen);
     
     -- Create two goal zones
     
-    local zone1 = display.newRect( 150, 0, 468, 150 )
-	zone1:setFillColor(100, 100, 255, 120)
+    local zone1 = display.newRect( 0, 150, 150, 468 )
+	zone1:setFillColor(101, 101, 101, 120)
 	physics.addBody(zone1, {density = 200, friction = .3, bounce = .2})
 	zone1.bodyType = "static" 
 	zone1.isSensor = true;
 	group:insert(zone1)
 	
-	local zone1Shadow = display.newRect(150,0,468,450)
+	local zone1Shadow = display.newRect(0,150,450,468)
 	zone1Shadow:setFillColor(0,0,0,0);
 	group:insert(zone1Shadow);
 	-- Register an event listener for touching the first goal zone
@@ -446,13 +638,21 @@ print("bigObjectsOnScreen = " .. bigObjectsOnScreen);
         --event.other:removeSelf();
         --event.other = nil
         end
+        if (event.other.id == "attractor") then
+            attractorPresent = false;
+            event.other:fadeOut();
+            
+            player2Score = player2Score + 1;
+        end
      if (event.other.id == "triangle" or event.other.id == "square") then
         print("triangle collided with goal 1");
-         event.other:fadeOut();
+       if (event.other ~= nil) then
+       event.other:fadeOut();
             
             bigObjectsOnScreen = bigObjectsOnScreen - 1;
             player2Score = player2Score + 1;
             --add to score here
+        end
         end
          if (event.other.id == "octoOrb") then
         print("woah");
@@ -478,14 +678,15 @@ print("bigObjectsOnScreen = " .. bigObjectsOnScreen);
     zone1:addEventListener( "collision", zone1 )
         
 
-    local zone2 = display.newRect( 150, display.contentHeight - 150, 468, 150 )
-    zone2:setFillColor(100, 100, 255, 120)
+    local zone2 = display.newRect( 874, 150, 150, 468 )
+    zone2:setFillColor(101, 101, 101, 120)
     physics.addBody(zone2, {density = 200, friction = .3, bounce = .2})
 	zone2.bodyType = "static" 
     zone2.isSensor = true;
     -- Register an event listener for touching the second goal zone
-    	local zone2Shadow = display.newRect(150,display.contentHeight-450,468,450)
-	zone2Shadow:setFillColor(0,0,0,0);
+    	local zone2Shadow = display.newRect(574,150,450,468)
+    	--(0,150,450,468)
+	zone2Shadow:setFillColor(255,0,0,0);
 	group:insert(zone2Shadow);
 	-- Register an event listener for touching the first goal zone
 	
@@ -514,7 +715,12 @@ print("bigObjectsOnScreen = " .. bigObjectsOnScreen);
         end
         
         --if you collided with a big shape, remove the big shape and add to the other player's score
-        
+          if (event.other.id == "attractor") then
+            attractorPresent = false;
+            event.other:fadeOut();
+            
+            player1Score = player1Score + 1;
+        end
         if (event.other.id == "triangle" or event.other.id == "square") then
         print("woah");
         
@@ -545,49 +751,76 @@ end
     -- Draw Arena
     local function drawArena()
 
+-- Draw a background
+
+local bg = display.newRect(0, 0, 1024, 768)
+bg.strokeWidth = 1
+bg:setFillColor(196, 233, 111)
+
  -- Draw the left upper segment 
-        local leftUpper = display.newLine(0,0, 150,0);
+        local leftUpper = display.newLine(0,0, 0,150);
         leftUpper:append(150,150);
-        leftUpper:append(25,275);
-        leftUpper:append(25,394);
-        leftUpper:append(0,394);
+        leftUpper:append(275,25);
+        leftUpper:append(394,25);
+        leftUpper:append(394,0);
         leftUpper.width = 3;
-        leftUpper:setColor(240,240,255,255);
+       -- local white = (240, 240, 255, 255);
+        leftUpper:setColor(0,0,0,255);
         
+       
+local fillLeftUpper = display.newGroup()
+local widthheight, isclosed, isperpixel = 1, false, false
+local points = {0,0, 0,150, 150,150, 275,25, 394,25, 394,0}   
+                -- polygonFill( points, closed, perPixel, width, height )
+                local p = polygonFill( table.listToNamed(points,{'x','y'}), isclosed, isperpixel, widthheight, widthheight )
+                fillLeftUpper:insert(p)
+  
+        
+     --   leftUpper:setFillColor(0, 0, 0,255)
         -- Box2d doesn't allow convex shapes, so I create a second shape to represent the physics object
-        local leftUpperExtend = display.newRect(0,275,25,119)
+        local leftUpperExtend = display.newRect(275,0,119,25)
         leftUpperExtend.strokeWidth = 3
-        leftUpperExtend:setFillColor(0, 0, 255,0)
+        leftUpperExtend:setFillColor(0, 0, 0,255)
         leftUpperExtend:setStrokeColor(0, 0, 255,0)
         
          -- Add a custom physics body shape based on the left upper shape
-        local leftUpperShape = {-25,0, 150,0, 150,150, 25,275, 0,275}
+        --local leftUpperShape = {0,-25, 0,150, 150,150, 275,25, 275,0}
+        local leftUpperShape = {0,0, 275,0, 275,25, 150,150, 0,150}
         physics.addBody( leftUpper, { density=10.0, friction=0, bounce=0.3, shape = leftUpperShape } )
         leftUpper.bodyType = "static";
         leftUpper.isSleepingAllowed = false;
-        
+       -- leftUpper:setFillColor(0, 0, 0,255)
       -- local leftUpperShapeExtend = {0,0,0,119,-25,119,0,0}
         physics.addBody( leftUpperExtend, { density=10.0, friction=0, bounce=0.3 } )
         leftUpperExtend.bodyType = "static";
         leftUpperExtend.isSleepingAllowed = false;
 
          -- Draw the right upper segment 
-        local rightUpper = display.newLine(768,0, 618,0);
-        rightUpper:append(618,150);
-        rightUpper:append(743,275);
-        rightUpper:append(743,394);
-        rightUpper:append(768,394);
+        local rightUpper = display.newLine(0,768, 0,618);
+        rightUpper:append(150,618);
+        rightUpper:append(275,743);
+        rightUpper:append(394,743);
+        rightUpper:append(394,768);
         rightUpper.width = 3;
-        rightUpper:setColor(255,255,255,255);
+        rightUpper:setColor(0, 0, 0,255);
+        
+        local fillRightUpper = display.newGroup()
+        local widthheightR, isclosedR, isperpixelR = 1, false, false
+local pointsR = {0,768, 0,618, 150,618, 275,743, 394,743, 394,768}   
+                -- polygonFill( points, closed, perPixel, width, height )
+                local pR = polygonFill( table.listToNamed(pointsR,{'x','y'}), isclosed, isperpixel, widthheight, widthheight )
+                fillRightUpper:insert(pR)
+  
         
         -- Box2d doesn't allow convex shapes, so I create a second shape to represent the physics object
-        local rightUpperExtend = display.newRect(743,275,25,119)
+        local rightUpperExtend = display.newRect(275,743,119,25)
         rightUpperExtend.strokeWidth = 3
-        rightUpperExtend:setFillColor(0, 0, 255,0)
-        rightUpperExtend:setStrokeColor(0, 0, 255,0)
+        rightUpperExtend:setFillColor(0, 0, 0,255)
+        rightUpperExtend:setStrokeColor(0, 0, 0,255)
       
          -- Add a custom physics body shape based on the right upper shape
-        local rightUpperShape = {-150,0, 0,0,  0,275, -25,275, -150, 150}
+        local rightUpperShape = {0,-150, 150,-150, 275,-25, 275,0, 0,0}
+        --local rightUpperShape = {0,-150, 0,0,  275,0, 275,-25, 150, -150}
         physics.addBody( rightUpper, { density=10.0, friction=0, bounce=0.3, shape=rightUpperShape } )
         rightUpper.bodyType = "static";
         rightUpper.isSleepingAllowed = false;
@@ -598,22 +831,29 @@ end
         rightUpperExtend.isSleepingAllowed = false;
         
          -- Draw the left lower segment 
-        local leftLower = display.newLine(0,1024, 150,1024);
-        leftLower:append(150,874);
-        leftLower:append(25,749);
-        leftLower:append(25,630);
-        leftLower:append(0,630);
+        local leftLower = display.newLine(1024,0, 1024,150);
+        leftLower:append(874,150);
+        leftLower:append(749,25);
+        leftLower:append(630,25);
+        leftLower:append(630,0);
         leftLower.width = 3;
-        leftLower:setColor(240,240,255,255);
+        leftLower:setColor(0, 0, 0,255);
         
+          local fillLeftLower = display.newGroup()
+      
+local pointsLL = {1024,0, 1024,150, 874,150, 749,25, 630,25, 630,0}   
+                -- polygonFill( points, closed, perPixel, width, height )
+                local pLL = polygonFill( table.listToNamed(pointsLL,{'x','y'}), isclosed, isperpixel, widthheight, widthheight )
+                fillLeftLower:insert(pLL)
         -- Box2d doesn't allow convex shapes, so I create a second shape to represent the physics object
-        local leftLowerExtend = display.newRect(0,630,25,119)
+        local leftLowerExtend = display.newRect(630,0,119,25)
         leftLowerExtend.strokeWidth = 3
-        leftLowerExtend:setFillColor(0, 0, 255,0)
-        leftLowerExtend:setStrokeColor(0, 0, 255,0)
+        leftLowerExtend:setFillColor(0, 0, 0,255)
+        leftLowerExtend:setStrokeColor(0, 0, 0,255)
       
          -- Add a custom physics body shape based on the left lower shape
-         local leftLowerShape = {0,-275, 25,-275,  150,-150, 150,0, 0, 0}
+         local leftLowerShape = {-275,0, 150,0, 150,150, -150,150, -275,25}
+        -- local leftLowerShape = {-275,0, -275,25,  -150,150, 0,150, 0, 0}
         physics.addBody( leftLower, { density=10.0, friction=0, bounce=0.3, shape=leftLowerShape} )
         leftLower.bodyType = "static";
         leftLower.isSleepingAllowed = false;
@@ -624,22 +864,29 @@ end
         leftLowerExtend.isSleepingAllowed = false;
         
         -- Draw the right lower segment 
-        local rightLower = display.newLine(768,1024, 768-150,1024);
-        rightLower:append(768-150,874);
-        rightLower:append(743,749);
-        rightLower:append(743,630);
-        rightLower:append(768,630);
+        local rightLower = display.newLine(1024,768, 1024,768-150);
+        rightLower:append(874,768-150);
+        rightLower:append(749,743);
+        rightLower:append(630,743);
+        rightLower:append(630,768);
         rightLower.width = 3;
-        rightLower:setColor(240,240,255,255);
+        rightLower:setColor(0, 0, 0,255);
         
+          local fillRightLower = display.newGroup()
+   
+local pointsRL = {1024,768, 1024,768-150, 874,768-150, 749,743, 630,743, 630,768}   
+                -- polygonFill( points, closed, perPixel, width, height )
+                local pRL = polygonFill( table.listToNamed(pointsRL,{'x','y'}), isclosed, isperpixel, widthheight, widthheight )
+                fillRightLower:insert(pRL)
         -- Box2d doesn't allow convex shapes, so I create a second shape to represent the physics object
-        local rightLowerExtend = display.newRect(743,630,25,119)
+        local rightLowerExtend = display.newRect(630,743,119,25)
         rightLowerExtend.strokeWidth = 3
-        rightLowerExtend:setFillColor(0, 0, 255,0)
-        rightLowerExtend:setStrokeColor(0, 0, 255,0)
+        rightLowerExtend:setFillColor(0, 0, 0,255)
+        rightLowerExtend:setStrokeColor(0, 0, 0,255)
       
          -- Add a custom physics body shape based on the right lower shape
-         local rightLowerShape = {-25,-275, 0,-275,  0,0, -150,0, -150,-150}
+         local rightLowerShape = {-275,-25, -150,-150, 0,-150, 0,0, -275,0}
+         --local rightLowerShape = {-275,-25, -275,0,  0,0, 0,-150, -150,-150}
         physics.addBody( rightLower, { density=10.0, friction=0, bounce=0.3, shape=rightLowerShape} )
         rightLower.bodyType = "static";
         rightLower.isSleepingAllowed = false;
@@ -652,25 +899,33 @@ end
         
 -- Draw initial pellet #s
 
-    player2PelletNumDisplay = display.newText( "20", 35,900, "Eurostile", 72 )
+    player2PelletNumDisplay = display.newText( "20", 900,35, "Eurostile", 72 )
     player2PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
-    player2PelletNumDisplay:setTextColor(240, 240, 255)
+    player2PelletNumDisplay:setTextColor(0, 0, 0,255)
+    player2PelletNumDisplay:rotate(-90);
     
-    player1PelletNumDisplay = display.newText( "20", 25,70, "Eurostile", 72 )
+    player1PelletNumDisplay = display.newText( "20", 70,25, "Eurostile", 72 )
     player1PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
-    player1PelletNumDisplay:setTextColor(240, 240, 255)
-    player1PelletNumDisplay:rotate(180);
+    player1PelletNumDisplay:setTextColor(0, 0, 0,255)
+    player1PelletNumDisplay:rotate(90);
     
 -- Draw initial scores
-        player2ScoreDisplay = display.newText( "0", 675,900, "Eurostile", 72 )
+    player2ScoreDisplay = display.newText( "0", 900,675, "Eurostile", 72 )
     player2ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
-    player2ScoreDisplay:setTextColor(240, 240, 255)
+    player2ScoreDisplay:setTextColor(0, 0, 0,255)
+    player2ScoreDisplay:rotate(-90);
     
-    player1ScoreDisplay = display.newText( "0", 675,70, "Eurostile", 72 )
+    player1ScoreDisplay = display.newText( "0", 70,675, "Eurostile", 72 )
     player1ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
-    player1ScoreDisplay:setTextColor(240, 240, 255)
-    player1ScoreDisplay:rotate(180);
-    
+    player1ScoreDisplay:setTextColor(0, 0, 0,255)
+    player1ScoreDisplay:rotate(90);
+  
+  group:insert(bg);
+group:insert(player1ScoreDisplay);
+group:insert(player2ScoreDisplay);
+group:insert(player2PelletNumDisplay);
+group:insert(player1PelletNumDisplay);
+
     
 group:insert(leftUpperExtend);
 group:insert(leftUpper);
@@ -682,6 +937,11 @@ group:insert(rightLowerExtend);
 
 group:insert(leftLower);
 group:insert(leftLowerExtend);
+
+group:insert(fillRightLower);
+group:insert(fillRightUpper);
+group:insert(fillLeftLower);
+group:insert(fillLeftUpper);
 end
     drawArena();
     

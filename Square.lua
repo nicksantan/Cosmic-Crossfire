@@ -12,9 +12,9 @@ function Square.new(xLoc, yLoc)
               
                 --square.width = 8;
                -- square:setColor(100,255,100,255);
-               square:setStrokeColor(240,240,255,255);
+               square:setStrokeColor(0,0,0,255);
                square.strokeWidth = 8;
-               square:setFillColor(240,240,255,0);
+               square:setFillColor(0,0,255,0);
         
               
                 physics.addBody( square, { density=3.0, friction=0.8, bounce=0.3} )
@@ -35,11 +35,35 @@ function Square.new(xLoc, yLoc)
            -- print("square enterframe");
                -- square:applyTorque(math.sin(sinCounter)*10);
                square:applyTorque(randRot);
+              
+              square:attract();
             
         end
+        local function checkBoundary()
+            if (square.y < 0 or square.y > 768) then
+                print (square.y)
+                square:fadeOut();
+                bigObjectsOnScreen = bigObjectsOnScreen - 1;
+            end
+       end
        
+       local function addBoundaryListener( event )
+            Runtime:addEventListener( "enterFrame", checkBoundary )
+       end
+ 
+        timer.performWithDelay(500, addBoundaryListener )
+        
         Runtime:addEventListener( "enterFrame", eachFrame )
         
+        function square:attract()
+            if (attractorPresent == true) then
+                --print ("square wants to go to the attractor");
+                local dirX, dirY = getDirection(square.x,square.y,attractor.x,attractor.y);
+                square:applyForce(dirX*10,dirY*10,square.x,square.y);
+            --    print ("dir X is " .. dirX);
+            --    print ("dir Y is " .. dirY);
+            end
+        end
       
         
         function square:destroy()
@@ -53,6 +77,7 @@ function Square.new(xLoc, yLoc)
             local function goAway()
             print("...and going away");
              Runtime:removeEventListener("enterFrame", eachFrame);
+              Runtime:removeEventListener("enterFrame", checkBoundary);
             square:removeSelf()
                 square = nil
             end
