@@ -12,8 +12,10 @@ local Snake = require("Snake")
 local Attractor = require("Attractor");
 local storyboard = require( "storyboard" )
 local widget = require "widget"
+local timeKeep;
 require("displayex")
 require("mathlib")
+local stopwatch = require("stopwatch");
 
 local scene = storyboard.newScene()
 
@@ -112,9 +114,17 @@ local function updateScore()
     player2ScoreDisplay.text = player2Score .. " - " .. player1Score;
     player1ScoreDisplay.text = player1Score .. " - " .. player2Score;
     
+    -- If this is a time match, run the timer.
+    if (gameMode == "time") then
+        local timeRemaining = timeKeep:toRemainingString();
+        print(timeRemaining);
+        if (timeKeep:isElapsed()) then
+        
+        -- see who won 
+        end
+    end
     -- 
     --check for game over conditions
-    
     if (gameMode == "points") then
  --   print (pointLimit);
         -- check for score win
@@ -538,6 +548,11 @@ function scene:enterScene( event )
     mono = {0,0,0,255};
     gameOn = true;
 
+    -- if this is a time based game, start the timer
+    if (gameMode == "time") then
+         timeKeep = stopwatch.new(120)
+    end
+    --
     -- Function that runs every frame and maintains the game
 
     --should this be a local function here? probably not

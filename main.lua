@@ -31,7 +31,7 @@ local player2Bullets;
 local bigObjectsOnScreen;
 local attractorPresent = false;
 local attractor;
-local gameTimer = 
+
 local gameOn = true;
 --print (gameOn);
 --define some global functions
