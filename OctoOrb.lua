@@ -9,7 +9,7 @@ function OctoOrb.new(xLoc, yLoc)
                 local alreadyFadedOut = false;
                 local behaviorType = math.random(2);
                 local randRot = math.random(-30,30);
-     
+     local pauser= 0;
                 octoOrb:setStrokeColor(mono[0],mono[1],mono[2],255)
                 octoOrb.strokeWidth = 5;
                 octoOrb:setFillColor(mono[0],mono[1],mono[2],180)
@@ -117,6 +117,7 @@ function OctoOrb.new(xLoc, yLoc)
             end
         
          --   octoOrb:attract();
+            octoOrb:drawTrail();
         end
          local function checkBoundary()
             if (octoOrb.y < 0 or octoOrb.y > 768) then
@@ -144,6 +145,92 @@ function OctoOrb.new(xLoc, yLoc)
       --      end
       --  end
         
+        function octoOrb:drawTrail()
+            
+            local trail;
+            pauser = pauser + 1;
+            local function trailErase()
+               if (trail ~= nil) then
+               trail:removeSelf();
+                trail = nil;
+                end
+                
+                 if (trailRight ~= nil) then
+               trailRight:removeSelf();
+                trailRight = nil;
+                end
+                
+                 if (trailLeft ~= nil) then
+               trailLeft:removeSelf();
+                trailLeft = nil;
+                end
+                
+                 if (trailRightSm ~= nil) then
+               trailRightSm:removeSelf();
+                trailRightSm = nil;
+                end
+                 if (trailLeftSm ~= nil) then
+               trailLeftSm:removeSelf();
+                trailLeftSm = nil;
+                end
+                
+            end
+        
+ 
+            --draw trail here
+            if (pauser > 3) then 
+            
+            trail = display.newCircle(octoOrb.x,octoOrb.y, 50,50);
+             trailRight = display.newCircle(rightOrb.x,rightOrb.y, 25, 25);
+              trailLeft = display.newCircle(leftOrb.x,leftOrb.y, 25, 25);
+             
+               trailRightSm = display.newCircle(rightSmOrb.x,rightSmOrb.y, 10, 10);
+                 trailLeftSm = display.newCircle(leftSmOrb.x, leftSmOrb.y, 10, 10);
+             
+
+            
+         
+              trail:setStrokeColor(0,0,0,255);
+               trail.strokeWidth = 5;
+               trail:setReferencePoint(display.CenterReferencePoint);
+               trail:setFillColor(0,0,255,0);
+               trail.rotation = octoOrb.rotation;
+               
+               trailRight:setStrokeColor(0,0,0,255);
+               trailRight.strokeWidth = 5;
+               trailRight:setReferencePoint(display.CenterReferencePoint);
+               trailRight:setFillColor(0,0,255,0);
+               trailRight.rotation = octoOrb.rotation;
+               
+               trailLeft:setStrokeColor(0,0,0,255);
+               trailLeft.strokeWidth = 5;
+               trailLeft:setReferencePoint(display.CenterReferencePoint);
+               trailLeft:setFillColor(0,0,255,0);
+               trailLeft.rotation = octoOrb.rotation;
+               
+               trailRightSm:setStrokeColor(0,0,0,255);
+               trailRightSm.strokeWidth = 5;
+               trailRightSm:setReferencePoint(display.CenterReferencePoint);
+               trailRightSm:setFillColor(0,0,255,0);
+               trailRightSm.rotation = octoOrb.rotation;
+               
+               trailLeftSm:setStrokeColor(0,0,0,255);
+               trailLeftSm.strokeWidth = 5;
+               trailLeftSm:setReferencePoint(display.CenterReferencePoint);
+               trailLeftSm:setFillColor(0,0,255,0);
+               trailLeftSm.rotation = octoOrb.rotation;
+               
+                transition.to(trail, {alpha = 0.0, time=500, onComplete = trailErase});
+                   transition.to(trailRight, {alpha = 0.0, time=500});
+                      transition.to(trailLeft, {alpha = 0.0, time=500});
+                         transition.to(trailRightSm, {alpha = 0.0, time=500});
+         
+         
+         transition.to(trailLeftSm, {alpha = 0.0, time=501, onComplete = trailErase});
+       pauser = 0;
+       end
+       end
+      
         function octoOrb:destroy()
             print("octoOrb gone");
             

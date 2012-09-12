@@ -21,7 +21,7 @@ physics.setGravity(0,0);
 local storyboard = require "storyboard"
 storyboard.purgeOnSceneChange = true
 local widget = require "widget"
-
+local stopwatch = require "stopwatch"
 
 -- some global variables
 local gameMode;
@@ -31,8 +31,9 @@ local player2Bullets;
 local bigObjectsOnScreen;
 local attractorPresent = false;
 local attractor;
+local gameTimer = 
 local gameOn = true;
-print (gameOn);
+--print (gameOn);
 --define some global functions
 function getDirection(objX, objY, otherObjX, otherObjY)
 

@@ -106,7 +106,17 @@ function Snake.new(xLoc, yLoc, dir)
                 trailTen.angularDamping = 1;
                 snake.trailTen = trailTen;
         
-                
+                trailOne.id = "snake"
+                trailTwo.id = "snake"
+                 trailThree.id = "snake"
+                  trailFour.id = "snake"
+                   trailFive.id = "snake"
+                    trailSix.id = "snake"
+                     trailSeven.id = "snake"
+                      trailEight.id = "snake"
+                       trailNine.id = "snake"
+                        trailTen .id = "snake"
+                      
                 -- Create joints between the orbs
               
  
@@ -205,7 +215,7 @@ function Snake.new(xLoc, yLoc, dir)
     end
 
     local function eachFrame()
-        print ("dir is ".. dir);
+       -- print ("dir is ".. dir);
         local x0=500
         local speed = 35
         local amp= 50

@@ -6,15 +6,22 @@ local Attractor = {}
  
 function Attractor.new(xLoc, yLoc)
         
+                local trailTimer = 0;
+                
+                 local attractorGroup = display.newGroup();
+                 
         -- Draw a attractor
-              
+                local trail;
                 local attractor = display.newCircle( 100, 100, 20 );
+                
+               
+                attractorGroup:insert(attractor);
                 physics.addBody( attractor, { density=10.0, friction=0.8, bounce=0.3, radius = 20 } )
                 -- attractor:setColor(100,255,100,255);
                        attractor:setStrokeColor(mono[0],mono[1],mono[2],255);
                attractor.strokeWidth = 8;
-               attractor:setFillColor(mono[0],mono[1],mono[2],0);
-        
+              --attractor:setFillColor(mono[0],mono[1],mono[2],0);
+        attractor:setFillColor(255, 255, 255, 255) --was 196 233, 111, 
                 attractor.id = "attractor"
                 attractor.x = xLoc;
                 attractor.y = yLoc;
@@ -25,11 +32,45 @@ function Attractor.new(xLoc, yLoc)
                 attractor.hasTouched = false;
         
 
+          local function drawTrail()
+            trailTimer = trailTimer + 1;
+          
+        local function removeMe()
+            if (trail ~= nil) then
+                trail:removeSelf();
+                trail = nil;
+        
+            end
+        end
+            if (trailTimer > 30) then
+          
+                print ("trail timer is " .. trailTimer);
+                trail = display.newCircle( attractor.x, attractor.y, 20 );
+                 attractorGroup:insert(trail);
+                trail.xScale = 4.0;
+                trail.alpha = 0.8
+                trail:toBack();
+                
+                 trail:setFillColor(mono[0],mono[1],mono[2],255);
+                trail.yScale = 4.0;
+                 trail:toBack();
+                attractor:toFront();
+               
+                transition.to(trail, {time=250, xScale = 1.0, yScale = 1.0, alpha=0.0, onComplete = removeMe});
+                                 trail:setStrokeColor(mono[0],mono[1],mono[2],255);
+                                  attractor:toFront();
+               trail.strokeWidth = 0;
+              
+                trailTimer = 0;
+            end
+          end
           
           local function eachFrame()
            -- need to figure out a way to 'broadcast' this location more globally
           -- testGlobal = testGlobal + 1;
          --  print ("anything happening?");
+          attractor:toFront();
+         drawTrail();
             
         end
        local function onLocalPreCollision( self, event )
@@ -38,7 +79,7 @@ function Attractor.new(xLoc, yLoc)
         -- where the character should jump "through" a platform on the way up, but land on the platform
         -- as they fall down again.
  
-        if (event.other.id ~= "player2Bullet" and event.other.id ~= "player1Bullet") then
+        if (event.other.id ~= "player2Bullet" and event.other.id ~="wall" and event.other.id ~="snake" and event.other.id ~= "player1Bullet") then
     print ("pre collision happened");
         -- Note that this event is very "noisy", since it fires whenever any objects are somewhat close!
  local theX = self.x;
@@ -49,6 +90,32 @@ local power = 1000;
 
 local dirX, dirY = getDirection(theX,theY,otherX,otherY);
  event.other:applyForce(dirX*power, dirY*power, event.other.x, event.other.y);
+ 
+        local function removeMe()
+            if (trail ~= nil) then
+                trail:removeSelf();
+                trail = nil;
+        
+            end
+        end
+ local trail;
+ trail = display.newCircle( attractor.x, attractor.y, 20 );
+                 attractorGroup:insert(trail);
+                trail.xScale = 1.0;
+                  trail.yScale = 1.0;
+                trail.alpha = 0.8
+                trail:toBack();
+                
+                 trail:setFillColor(mono[0],mono[1],mono[2],255);
+              
+                 trail:toBack();
+                attractor:toFront();
+               
+                transition.to(trail, {time=200, xScale = 5.0, yScale = 5.0, alpha=0.0, onComplete = removeMe});
+                                 trail:setStrokeColor(mono[0],mono[1],mono[2],255);
+                                  attractor:toFront();
+               trail.strokeWidth = 0;
+ 
  end
 end
  
@@ -56,7 +123,7 @@ end
  
 attractor.preCollision = onLocalPreCollision
 attractor:addEventListener( "preCollision", attractor )
-
+        Runtime:addEventListener( "enterFrame", eachFrame )
     local function checkBoundary()
     if (attractor ~= nil) then
             if (attractor.y < -200 or attractor.y > 968) then

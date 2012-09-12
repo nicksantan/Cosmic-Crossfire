@@ -6,7 +6,7 @@ function Triangle.new(xLoc, yLoc)
         
         -- Draw a triangle
                 local triangle = display.newLine(100,100, 100,300);
-                
+                local pauser = 0;
                 triangle.hasTouched = false;
                 local randRot = math.random(-30,30);
                 triangle:append(0,200, 100,100);
@@ -35,6 +35,7 @@ function Triangle.new(xLoc, yLoc)
                -- triangle:applyTorque(math.sin(sinCounter)*10);
                triangle:applyTorque(randRot);
                triangle:attract();
+                triangle:drawTrail();
             
         end
        local function checkBoundary()
@@ -79,7 +80,37 @@ function Triangle.new(xLoc, yLoc)
                -- print ("dir Y is " .. dirY);
             end
         end
+        function triangle:drawTrail()
+        local trail;
+        pauser = pauser + 1;
+        local function trailErase()
+        trail:removeSelf();
+       trail = nil;
+        end
         
+    --    print("is this shit running?");
+        
+        if (pauser > 3) then
+        
+              trail = display.newLine(100,100, 100,300);
+              trail:append(0,200, 100,100);
+                trail.width = 8;
+        trail:setColor(mono[0],mono[1],mono[2],255);
+       
+        trail.x = (triangle.x)
+        trail.y = triangle.y
+       
+       -- trail = display.newRect(sqX, sqY, 100, 100);
+        -- trail:setStrokeColor(0,0,0,255);
+               trail.strokeWidth = 8;
+            
+              -- trail:setFillColor(0,0,255,0);
+               trail.rotation = triangle.rotation;
+                transition.to(trail, {alpha = 0.0, time=500, onComplete = trailErase});
+        pauser = 0;
+        end
+        end
+      
         function triangle:destroy()
         print("triangle gone");
             if (triangle ~= nil) then

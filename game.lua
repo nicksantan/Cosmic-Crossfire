@@ -36,21 +36,25 @@ local function showGameOver()
             if (btn.id == "playAgain") then
                 -- gameMode = "points"
                 gameOn = true;
+                   playAgainButton:removeSelf();
+            mainMenuButton:removeSelf();
+            playAgainButton = nil;
+            mainMenuButton = nil;
                 -- reset all game variables here
             end
     
             if (btn.id == "mainMenu") then
                 -- go to title
+                   playAgainButton:removeSelf();
+            mainMenuButton:removeSelf();
+            playAgainButton = nil;
+            mainMenuButton = nil;
                 storyboard.gotoScene( "title" )
     
             end
     
-            display.remove( playAgainButton )
-            display.remove( mainMenuButton )
-            playAgainButton = nil;
-            mainMenuButton = nil;
         end
- playAgainButton = widget.newButton{
+            playAgainButton = widget.newButton{
             label = "Play Again",
             font = "HelveticaNeue-Bold",
             fontSize = 16,
@@ -103,22 +107,24 @@ end
 -- A function to update the score
 
 local function updateScore()
-    player1PelletNumDisplay.text = player1Bullets;
-    player2PelletNumDisplay.text = player2Bullets;
-    player2ScoreDisplay.text = player2Score;
-    player1ScoreDisplay.text = player1Score;
+    player1PelletNumDisplay.text = player1Bullets .. " pellets";
+    player2PelletNumDisplay.text = player2Bullets .. " pellets";
+    player2ScoreDisplay.text = player2Score .. " - " .. player1Score;
+    player1ScoreDisplay.text = player1Score .. " - " .. player2Score;
     
     -- 
     --check for game over conditions
     
     if (gameMode == "points") then
-    print (pointLimit);
+ --   print (pointLimit);
         -- check for score win
+        if (gameOn) then
         if (player1Score >= pointLimit) then
             gameOver(1);
         
         elseif (player2Score >= pointLimit) then
             gameOver(2);
+        end
         end
     end
 end
@@ -142,7 +148,7 @@ local function placeObject(whichType, whichDir)
                 end
                 
                 local snake = Snake.new(xLoc, yLoc, whichDir) -- plenty of joy
-group1:insert( snake )
+                group1:insert( snake )
                 
                 if (whichDir == 1) then
                     snake:applyForce(0,-1000, snake.x, snake.y);
@@ -565,7 +571,7 @@ function scene:enterScene( event )
         end
         if (runTimer % 200 == 0) then
           -- local whichObject = 5;
-           local whichObject = math.random(4);
+           local whichObject = math.random(3);
             print("whichObject is " .. whichObject);
             local whichDir = math.random(2);
             placeObject(whichObject, whichDir); --wasWhichObject
@@ -788,13 +794,14 @@ local points = {0,0, 0,150, 150,150, 275,25, 394,25, 394,0}
         local leftUpperShape = {0,0, 275,0, 275,25, 150,150, 0,150}
         physics.addBody( leftUpper, { density=10.0, friction=0, bounce=0.3, shape = leftUpperShape } )
         leftUpper.bodyType = "static";
+        leftUpper.id = "wall";
         leftUpper.isSleepingAllowed = false;
        -- leftUpper:setFillColor(0, 0, 0,255)
       -- local leftUpperShapeExtend = {0,0,0,119,-25,119,0,0}
         physics.addBody( leftUpperExtend, { density=10.0, friction=0, bounce=0.3 } )
         leftUpperExtend.bodyType = "static";
         leftUpperExtend.isSleepingAllowed = false;
-
+leftUpperExtend.id = "wall";
          -- Draw the right upper segment 
         local rightUpper = display.newLine(0,768, 0,618);
         rightUpper:append(150,618);
@@ -824,12 +831,12 @@ local pointsR = {0,768, 0,618, 150,618, 275,743, 394,743, 394,768}
         physics.addBody( rightUpper, { density=10.0, friction=0, bounce=0.3, shape=rightUpperShape } )
         rightUpper.bodyType = "static";
         rightUpper.isSleepingAllowed = false;
-        
+        rightUpper.id = "wall";
        -- Add a second physics body to represent the extension of the upper right shape
         physics.addBody( rightUpperExtend, { density=10.0, friction=0, bounce=0.3 } )
         rightUpperExtend.bodyType = "static";
         rightUpperExtend.isSleepingAllowed = false;
-        
+        rightUpperExtend.id = "wall";
          -- Draw the left lower segment 
         local leftLower = display.newLine(1024,0, 1024,150);
         leftLower:append(874,150);
@@ -857,12 +864,12 @@ local pointsLL = {1024,0, 1024,150, 874,150, 749,25, 630,25, 630,0}
         physics.addBody( leftLower, { density=10.0, friction=0, bounce=0.3, shape=leftLowerShape} )
         leftLower.bodyType = "static";
         leftLower.isSleepingAllowed = false;
-        
+        leftLower.id = "wall";
        -- Add a second physics body to represent the extension of the upper right shape
         physics.addBody( leftLowerExtend, { density=10.0, friction=0, bounce=0.3 } )
         leftLowerExtend.bodyType = "static";
         leftLowerExtend.isSleepingAllowed = false;
-        
+        leftLowerExtend.id = "wall";
         -- Draw the right lower segment 
         local rightLower = display.newLine(1024,768, 1024,768-150);
         rightLower:append(874,768-150);
@@ -890,37 +897,52 @@ local pointsRL = {1024,768, 1024,768-150, 874,768-150, 749,743, 630,743, 630,768
         physics.addBody( rightLower, { density=10.0, friction=0, bounce=0.3, shape=rightLowerShape} )
         rightLower.bodyType = "static";
         rightLower.isSleepingAllowed = false;
-        
+        rightLower.id = "wall";
        -- Add a second physics body to represent the extension of the upper right shape
         physics.addBody( rightLowerExtend, { density=10.0, friction=0, bounce=0.3 } )
         rightLowerExtend.bodyType = "static";
         rightLowerExtend.isSleepingAllowed = false;
-        
+        rightLowerExtend.id = "wall";
         
 -- Draw initial pellet #s
 
-    player2PelletNumDisplay = display.newText( "20", 900,35, "Eurostile", 72 )
+    player2PelletNumDisplay = display.newText( "20 Pellets", 1000,55, "Eurostile", 24 )
     player2PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
-    player2PelletNumDisplay:setTextColor(0, 0, 0,255)
+        player2PelletNumDisplay.x = 1000;
+    player2PelletNumDisplay.y = 700;
+    player2PelletNumDisplay:setTextColor(255, 255, 255,255)
     player2PelletNumDisplay:rotate(-90);
     
-    player1PelletNumDisplay = display.newText( "20", 70,25, "Eurostile", 72 )
+
+    player1PelletNumDisplay = display.newText( "20 Pellets", 70,55, "Eurostile", 24)
     player1PelletNumDisplay:setReferencePoint(display.CenterReferencePoint);
-    player1PelletNumDisplay:setTextColor(0, 0, 0,255)
+    player1PelletNumDisplay.x = 24;
+    player1PelletNumDisplay.y = 68;
+    
+    player1PelletNumDisplay:setTextColor(255, 255, 255,255)
     player1PelletNumDisplay:rotate(90);
     
 -- Draw initial scores
-    player2ScoreDisplay = display.newText( "0", 900,675, "Eurostile", 72 )
+    player2ScoreDisplay = display.newText( "0 - 0", 900,85, "Eurostile", 60 )
     player2ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
-    player2ScoreDisplay:setTextColor(0, 0, 0,255)
+  
+    player2ScoreDisplay:setTextColor(255, 255, 255,255)
     player2ScoreDisplay:rotate(-90);
-    
-    player1ScoreDisplay = display.newText( "0", 70,675, "Eurostile", 72 )
+      player2ScoreDisplay.x=990;
+    player2ScoreDisplay.y=70;
+    player1ScoreDisplay = display.newText( "0 - 0", 70,675, "Eurostile", 60 )
     player1ScoreDisplay:setReferencePoint(display.CenterReferencePoint);
-    player1ScoreDisplay:setTextColor(0, 0, 0,255)
+    player1ScoreDisplay:setTextColor(255, 255, 255,255)
+     player1ScoreDisplay.x=34;
+    player1ScoreDisplay.y=698;
     player1ScoreDisplay:rotate(90);
   
   group:insert(bg);
+  
+group:insert(fillRightLower);
+group:insert(fillRightUpper);
+group:insert(fillLeftLower);
+group:insert(fillLeftUpper);
 group:insert(player1ScoreDisplay);
 group:insert(player2ScoreDisplay);
 group:insert(player2PelletNumDisplay);
@@ -938,10 +960,6 @@ group:insert(rightLowerExtend);
 group:insert(leftLower);
 group:insert(leftLowerExtend);
 
-group:insert(fillRightLower);
-group:insert(fillRightUpper);
-group:insert(fillLeftLower);
-group:insert(fillLeftUpper);
 end
     drawArena();
     

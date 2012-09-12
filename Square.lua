@@ -6,7 +6,7 @@ function Square.new(xLoc, yLoc)
         
         -- Draw a square
                 local square = display.newRect(0,0, 100,100);
-                
+                local pauser = 0;
                 square.hasTouched = false;
                 local randRot = math.random(-30,30);
               
@@ -34,9 +34,10 @@ function Square.new(xLoc, yLoc)
             --Generate a random number to determine the chance of a 'pulse'
            -- print("square enterframe");
                -- square:applyTorque(math.sin(sinCounter)*10);
-               square:applyTorque(randRot);
+                square:applyTorque(randRot);
               
-              square:attract();
+                square:attract();
+                square:drawTrail();
             
         end
         local function checkBoundary()
@@ -64,6 +65,33 @@ function Square.new(xLoc, yLoc)
             --    print ("dir Y is " .. dirY);
             end
         end
+        
+        function square:drawTrail()
+            local trail;
+            pauser = pauser + 1
+           
+            local function trailErase()
+                trail:removeSelf();
+                trail = nil;
+            end
+        
+            --  print("is this shit running?");
+        
+        
+        
+            local sqX = square.x - ((1/2) * square.width)
+            local sqY = square.y - ((1/2) * square.width)
+           if (pauser > 3) then
+          trail = display.newRect(sqX, sqY, 100, 100);
+            trail:setStrokeColor(0,0,0,255);
+            trail.strokeWidth = 8;
+            trail:setReferencePoint(display.CenterReferencePoint);
+               trail:setFillColor(0,0,255,0);
+               trail.rotation = square.rotation;
+                transition.to(trail, {alpha = 0.0, time=500, onComplete = trailErase});
+            pauser = 0;
+            end
+       end
       
         
         function square:destroy()
